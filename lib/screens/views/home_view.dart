@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/task_card.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -49,7 +50,7 @@ class HomeView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Hello, Alex!',
+                        'Hello, Masykur!',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -113,7 +114,7 @@ class HomeView extends StatelessWidget {
             children: [
               _buildCategoryItem('Gym', Icons.bed, const Color(0xFFFFF7DB), const Color(0xFFFFD54F)),
               const SizedBox(width: 16),
-              _buildCategoryItem('', Icons.chair_alt, const Color(0xFFFFF0E6), const Color(0xFFFFAB91)),
+              _buildCategoryItem('School', Icons.chair_alt, const Color(0xFFFFF0E6), const Color(0xFFFFAB91)),
               const SizedBox(width: 16),
               _buildCategoryItem('Work', Icons.work_outline, const Color(0xFFE3F2FD), const Color(0xFF90CAF9)),
               const SizedBox(width: 16),
@@ -161,13 +162,13 @@ class HomeView extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     children: [
-                      _buildTaskCard('Mop the floor', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Mop the floor', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 12),
-                      _buildTaskCard('Organize toiletries', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Organize toiletries', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 12),
-                      _buildTaskCard('Replace old towels', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Replace old towels', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 12),
-                      _buildTaskCard('Restock toilet paper', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Restock toilet paper', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 80), // Fab space
                     ],
                   ),
@@ -191,7 +192,7 @@ class HomeView extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: borderColor, width: 2),
           ),
-          child: Icon(icon, color: borderColor.withOpacity(0.8), size: 30),
+          child: Icon(icon, color: borderColor.withValues(alpha: 0.8), size: 30),
         ),
         const SizedBox(height: 8),
         if (title.isNotEmpty)
@@ -228,71 +229,6 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskCard(String title, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFBFBFB),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3142),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
-                    const SizedBox(width: 4),
-                    Text('Every week', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                    const SizedBox(width: 16),
-                    Icon(Icons.bar_chart, size: 14, color: Colors.grey.shade600),
-                    const SizedBox(width: 4),
-                    Text('Complexity: 5', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                  ],
-                )
-              ],
-            ),
-          ),
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade300, width: 1.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class DashedCirclePainter extends CustomPainter {

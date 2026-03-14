@@ -67,7 +67,7 @@ class ProfileView extends StatelessWidget {
 
               // Name & Badge
               const Text(
-                'Anna Smith',
+                'Abdullah Masykur',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -112,11 +112,11 @@ class ProfileView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildDetailField('FULL NAME', 'Anna Smith'),
+              _buildDetailField('FULL NAME', 'Abdullah Masykur'),
               const SizedBox(height: 16),
-              _buildDetailField('EMAIL ADDRESS', 'anna.smith@familycloud.com'),
+              _buildDetailField('EMAIL ADDRESS', 'masykur@gmail.com'),
               const SizedBox(height: 16),
-              _buildDetailField('PHONE NUMBER', '+1 (555) 000-1234'),
+              _buildDetailField('PHONE NUMBER', '+62 812-3456-7890'),
               const SizedBox(height: 32),
 
               // Weekly Performance
@@ -150,7 +150,7 @@ class ProfileView extends StatelessWidget {
                   border: Border.all(color: Colors.grey.shade200),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     )

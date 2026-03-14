@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/home_page.dart';
+import 'screens/onboarding_screen.dart';
 
 void main() {
   runApp(const DailybitApp());
@@ -29,7 +29,7 @@ class DailybitApp extends StatelessWidget {
         ),
         useMaterial3: true, // Wajib diaktifkan untuk desain modern
       ),
-      home: const HomePage(),
+      home: const OnboardingScreen(),
     );
   }
 }

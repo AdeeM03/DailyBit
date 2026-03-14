@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../widgets/task_card.dart';
 
-class CalendarView extends StatelessWidget {
+class CalendarView extends StatefulWidget {
   const CalendarView({super.key});
+
+  @override
+  State<CalendarView> createState() => _CalendarViewState();
+}
+
+class _CalendarViewState extends State<CalendarView> {
+  String _selectedDay = '13'; // Default selected day based on mockup
 
   @override
   Widget build(BuildContext context) {
@@ -28,15 +36,19 @@ class CalendarView extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             children: [
-              _buildDayItem('11', 'Mon', false),
+              _buildDayItem('11', 'Mon'),
               const SizedBox(width: 12),
-              _buildDayItem('12', 'Tue', false),
+              _buildDayItem('12', 'Tue'),
               const SizedBox(width: 12),
-              _buildDayItem('13', 'Wed', true),
+              _buildDayItem('13', 'Wed'),
               const SizedBox(width: 12),
-              _buildDayItem('14', 'Thu', false),
+              _buildDayItem('14', 'Thu'),
               const SizedBox(width: 12),
-              _buildDayItem('15', 'Fri', false),
+              _buildDayItem('15', 'Fri'),
+              const SizedBox(width: 12),
+              _buildDayItem('16', 'Sat'),
+              const SizedBox(width: 12),
+              _buildDayItem('17', 'Sun'),
             ],
           ),
         ),
@@ -80,13 +92,13 @@ class CalendarView extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     children: [
-                      _buildTaskCard('Mop the floor', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Mop the floor', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 12),
-                      _buildTaskCard('Organize toiletries', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Organize toiletries', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 12),
-                      _buildTaskCard('Replace old towels', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Replace old towels', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 12),
-                      _buildTaskCard('Restock toilet paper', 'Last Cleaning: Fri, Aug 09 2024'),
+                      const TaskCard(title: 'Restock toilet paper', subtitle: 'Last Cleaning: Fri, Aug 09 2024'),
                       const SizedBox(height: 80), // Fab space
                     ],
                   ),
@@ -99,106 +111,48 @@ class CalendarView extends StatelessWidget {
     );
   }
 
-  Widget _buildDayItem(String day, String weekday, bool isActive) {
-    return Container(
-      width: 65,
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF62B694) : Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: isActive ? [
-          BoxShadow(
-            color: const Color(0xFF62B694).withOpacity(0.4),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ] : [],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            day,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: isActive ? Colors.white : const Color(0xFF2D3142),
+  Widget _buildDayItem(String day, String weekday) {
+    bool isActive = _selectedDay == day;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedDay = day;
+        });
+      },
+      child: Container(
+        width: 65,
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF62B694) : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: isActive ? [
+            BoxShadow(
+              color: const Color(0xFF62B694).withValues(alpha: 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ] : [],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              day,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: isActive ? Colors.white : const Color(0xFF2D3142),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            weekday,
-            style: TextStyle(
-              fontSize: 14,
-              color: isActive ? Colors.white.withOpacity(0.9) : Colors.grey.shade500,
+            const SizedBox(height: 4),
+            Text(
+              weekday,
+              style: TextStyle(
+                fontSize: 14,
+                color: isActive ? Colors.white.withValues(alpha: 0.9) : Colors.grey.shade500,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTaskCard(String title, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFBFBFB),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3142),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
-                    const SizedBox(width: 4),
-                    Text('Every week', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                    const SizedBox(width: 16),
-                    Icon(Icons.bar_chart, size: 14, color: Colors.grey.shade600),
-                    const SizedBox(width: 4),
-                    Text('Complexity: 5', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                  ],
-                )
-              ],
-            ),
-          ),
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade300, width: 1.5),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

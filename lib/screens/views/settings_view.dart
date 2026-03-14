@@ -100,7 +100,7 @@ class SettingsView extends StatelessWidget {
             Switch(
               value: true,
               onChanged: (val) {},
-              activeColor: Colors.white,
+              activeThumbColor: Colors.white,
               activeTrackColor: const Color(0xFF62B694),
             ),
         ],
