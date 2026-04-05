@@ -1,0 +1,20 @@
+﻿Analyzing dailybit...                                           
+
+   info - The local variable '_i' starts with an underscore - lib\screens\views\diary_view.dart:237:31 - no_leading_underscores_for_local_identifiers
+
+flutter : 1 issue found. 
+(ran in 3.5s)
+At line:1 char:1
++ flutter analyze 2>&1 | 
+Out-File -FilePath 
+analyze_output.txt 
+-Encodin ...
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (1 i  
+  ssue found. (ran in 3.   
+ 5s):String) [], Remote    
+Exception
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 

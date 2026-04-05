@@ -62,12 +62,14 @@ class _HomePageState extends State<HomePage> {
                   icon: Icons.menu_book_outlined,
                   activeIcon: Icons.menu_book_rounded,
                   label: 'DIARY',
+                  useBadge: true,
                 ),
                 _buildNavItem(
                   index: 2,
                   icon: Icons.history_rounded,
                   activeIcon: Icons.history_rounded,
                   label: 'HISTORY',
+                  useBadge: true,
                 ),
                 _buildNavItem(
                   index: 3,
