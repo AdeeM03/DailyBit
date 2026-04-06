@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:chiclet/chiclet.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../providers/app_provider.dart';
+import '../../models/diary_entry.dart';
 
 class DiaryView extends StatefulWidget {
   const DiaryView({super.key});
@@ -12,35 +16,81 @@ class _DiaryViewState extends State<DiaryView> {
   int _selectedFilter = 0;
   final List<String> _filters = ['All entries', 'Favorites', 'Mood Tracker'];
 
-  // Hardcoded diary entries
-  final List<Map<String, dynamic>> _entries = [
-    {
-      'emoji': '😊',
-      'emojiColor': const Color(0xFF7CB342),
-      'date': 'Monday, Oct 24',
-      'mood': 'ENERGETIC MORNING',
-      'body':
-          'Finally managed to finish the 30-minute meditation session. Feeling incredibly grounded and ready to tackle the week\'s goals!',
-    },
-    {
-      'emoji': '🍃',
-      'emojiColor': const Color(0xFF558B2F),
-      'date': 'Sunday, Oct 23',
-      'mood': 'FOCUSED FLOW',
-      'body':
-          'Hit a 7-day streak today! The new habit of reading before bed is actually sticking. Brain feels much less cluttered.',
-    },
-    {
-      'emoji': '☁️',
-      'emojiColor': const Color(0xFF90CAF9),
-      'date': 'Oct 22',
-      'body': 'A bit tired today but kept the routine alive...',
-      'isSmall': true,
-    },
-  ];
+  void _showWriteNoteDialog(BuildContext context) {
+    final bodyController = TextEditingController();
+    final moodController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text("Write Today's Note", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: moodController,
+                decoration: const InputDecoration(
+                  labelText: 'Mood (Optional)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: bodyController,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'How was your day?',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (bodyController.text.isNotEmpty) {
+                  final now = DateTime.now();
+                  final newEntry = DiaryEntry(
+                    date: DateFormat('yyyy-MM-dd').format(now),
+                    dateLabel: DateFormat('EEEE, MMM d').format(now),
+                    emoji: '📝',
+                    emojiColorHex: 0xFFFBC02D,
+                    mood: moodController.text.toUpperCase(),
+                    body: bodyController.text,
+                  );
+                  context.read<AppProvider>().addDiaryEntry(newEntry);
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7CB342),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('SAVE', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+    
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF7CB342)));
+    }
+
+    final entries = provider.diaryEntries;
+
     return Stack(
       children: [
         SingleChildScrollView(
@@ -52,11 +102,11 @@ class _DiaryViewState extends State<DiaryView> {
               children: [
                 const SizedBox(height: 12),
                 // ─── Header ───
-                _buildHeader(),
+                _buildHeader(provider.currentStreak),
                 const SizedBox(height: 24),
 
                 // ─── Write Today's Note Card ───
-                _buildWriteNoteCard(),
+                _buildWriteNoteCard(context),
                 const SizedBox(height: 20),
 
                 // ─── Filter Chips ───
@@ -68,13 +118,16 @@ class _DiaryViewState extends State<DiaryView> {
                 const SizedBox(height: 20),
 
                 // ─── Diary Entry Cards ───
-                _buildDiaryEntryCard(_entries[0]),
-                const SizedBox(height: 16),
-                _buildDiaryEntryCard(_entries[1]),
-                const SizedBox(height: 16),
+                if (entries.isEmpty)
+                   const Center(child: Text("No entries yet. Start writing!", style: TextStyle(color: Colors.grey)))
+                else
+                  ...entries.map((entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: _buildDiaryEntryCard(entry),
+                  )),
 
                 // ─── Small card + View All History ───
-                _buildBottomRow(),
+                _buildBottomRow(entries),
                 const SizedBox(height: 100),
               ],
             ),
@@ -97,12 +150,11 @@ class _DiaryViewState extends State<DiaryView> {
               ],
             ),
             child: FloatingActionButton(
-              onPressed: () {},
+              onPressed: () => _showWriteNoteDialog(context),
               backgroundColor: const Color(0xFF7CB342),
               elevation: 0,
               shape: const CircleBorder(),
-              child:
-                  const Icon(Icons.edit_rounded, color: Colors.white, size: 24),
+              child: const Icon(Icons.edit_rounded, color: Colors.white, size: 24),
             ),
           ),
         ),
@@ -110,10 +162,7 @@ class _DiaryViewState extends State<DiaryView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  HEADER: "Daily Diary" + streak badge
-  // ────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _buildHeader(int streak) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -140,7 +189,6 @@ class _DiaryViewState extends State<DiaryView> {
             ),
           ],
         ),
-        // Streak badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
@@ -151,9 +199,9 @@ class _DiaryViewState extends State<DiaryView> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                '7 Day Streak',
-                style: TextStyle(
+              Text(
+                '$streak Day Streak',
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF558B2F),
@@ -168,12 +216,9 @@ class _DiaryViewState extends State<DiaryView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  WRITE TODAY'S NOTE — Green Card
-  // ────────────────────────────────────────
-  Widget _buildWriteNoteCard() {
+  Widget _buildWriteNoteCard(BuildContext context) {
     return ChicletAnimatedButton(
-      onPressed: () {},
+      onPressed: () => _showWriteNoteDialog(context),
       width: double.infinity,
       height: 80,
       buttonHeight: 5,
@@ -225,9 +270,6 @@ class _DiaryViewState extends State<DiaryView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  FILTER CHIPS
-  // ────────────────────────────────────────
   Widget _buildFilterChips() {
     return SizedBox(
       height: 40,
@@ -267,9 +309,6 @@ class _DiaryViewState extends State<DiaryView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  SECTION TITLE with divider
-  // ────────────────────────────────────────
   Widget _buildSectionTitle(String title) {
     return Row(
       children: [
@@ -289,10 +328,7 @@ class _DiaryViewState extends State<DiaryView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  DIARY ENTRY CARD (full size)
-  // ────────────────────────────────────────
-  Widget _buildDiaryEntryCard(Map<String, dynamic> entry) {
+  Widget _buildDiaryEntryCard(DiaryEntry entry) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -310,19 +346,17 @@ class _DiaryViewState extends State<DiaryView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row: emoji + date + mood + menu
           Row(
             children: [
-              // Emoji circle
               Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: (entry['emojiColor'] as Color).withValues(alpha: 0.15),
+                  color: Color(entry.emojiColorHex).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: Text(entry['emoji'], style: const TextStyle(fontSize: 20)),
+                child: Text(entry.emoji, style: const TextStyle(fontSize: 20)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -330,20 +364,20 @@ class _DiaryViewState extends State<DiaryView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      entry['date'],
+                      entry.dateLabel,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF2D3142),
                       ),
                     ),
-                    if (entry['mood'] != null)
+                    if (entry.mood.isNotEmpty)
                       Text(
-                        entry['mood'],
+                        entry.mood,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: entry['emojiColor'] as Color,
+                          color: Color(entry.emojiColorHex),
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -354,9 +388,8 @@ class _DiaryViewState extends State<DiaryView> {
             ],
           ),
           const SizedBox(height: 14),
-          // Body text
           Text(
-            entry['body'],
+            entry.body,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade700,
@@ -368,15 +401,14 @@ class _DiaryViewState extends State<DiaryView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  BOTTOM ROW: Small card + View All History
-  // ────────────────────────────────────────
-  Widget _buildBottomRow() {
-    final smallEntry = _entries[2];
+  Widget _buildBottomRow(List<DiaryEntry> entries) {
+    // If we have enough entries, we'll try to pick a small one, or just the last for demonstration.
+    DiaryEntry? smallEntry = entries.isNotEmpty ? entries.last : null;
+    
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Small diary card
+        if (smallEntry != null)
         Expanded(
           flex: 3,
           child: Container(
@@ -399,17 +431,17 @@ class _DiaryViewState extends State<DiaryView> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: (smallEntry['emojiColor'] as Color)
+                    color: Color(smallEntry.emojiColorHex)
                         .withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
-                  child: Text(smallEntry['emoji'],
+                  child: Text(smallEntry.emoji,
                       style: const TextStyle(fontSize: 18)),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  smallEntry['date'],
+                  smallEntry.dateLabel,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -418,7 +450,7 @@ class _DiaryViewState extends State<DiaryView> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  smallEntry['body'],
+                  smallEntry.body,
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade500,
@@ -431,8 +463,8 @@ class _DiaryViewState extends State<DiaryView> {
             ),
           ),
         ),
-        const SizedBox(width: 12),
-        // View All History button
+        if (smallEntry != null) const SizedBox(width: 12),
+        
         Expanded(
           flex: 2,
           child: ChicletAnimatedButton(

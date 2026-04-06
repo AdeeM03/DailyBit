@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:chiclet/chiclet.dart';
-import '../../widgets/habit_card.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../providers/app_provider.dart';
+import '../../models/habit.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -10,26 +13,161 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  int _selectedDayIndex = 3; // THU is selected by default (index 3)
+  // Generate 5 days: 2 days ago, yesterday, today, tomorrow, day after
+  List<DateTime> _generateSurroundingDays() {
+    final today = DateTime.now();
+    return [
+      today.subtract(const Duration(days: 2)),
+      today.subtract(const Duration(days: 1)),
+      today,
+      today.add(const Duration(days: 1)),
+      today.add(const Duration(days: 2)),
+    ];
+  }
 
-  // Hardcoded habit states
-  final Map<int, bool> _habitStates = {
-    0: true, // "My first habit" — checked
-    1: false, // "Hydrate"
-    2: false, // "Mindfulness"
-  };
+  void _showHabitDialog(BuildContext context, {Habit? habit}) {
+    final titleController = TextEditingController(text: habit?.title ?? '');
+    final subtitleController = TextEditingController(text: habit?.subtitle ?? '');
+    
+    int selectedBgColorHex = habit?.bgColorHex ?? 0xFF558B2F;
+    int selectedFgColorHex = habit?.colorHex ?? 0xFF7CB342;
 
-  // Days data
-  final List<Map<String, dynamic>> _days = [
-    {'day': 'MON', 'date': 12},
-    {'day': 'TUE', 'date': 13},
-    {'day': 'WED', 'date': 14},
-    {'day': 'THU', 'date': 15},
-    {'day': 'FRI', 'date': 16},
-  ];
+    final palettes = [
+      {'bg': 0xFF558B2F, 'fg': 0xFF7CB342}, // Green
+      {'bg': 0xFF1976D2, 'fg': 0xFF42A5F5}, // Blue
+      {'bg': 0xFFF57F17, 'fg': 0xFFFFCA28}, // Yellow
+      {'bg': 0xFFD32F2F, 'fg': 0xFFEF5350}, // Red
+      {'bg': 0xFF7B1FA2, 'fg': 0xFFAB47BC}, // Purple
+      {'bg': 0xFFE65100, 'fg': 0xFFFFA726}, // Orange
+      {'bg': 0xFF455A64, 'fg': 0xFF78909C}, // Blue Grey
+    ];
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(habit == null ? 'Create New Habit' : 'Edit Habit', style: const TextStyle(fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Habit Title',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: subtitleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Subtitle / Target',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text('Card Color', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: palettes.map((p) {
+                        final isSelected = p['bg'] == selectedBgColorHex;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedBgColorHex = p['bg']!;
+                              selectedFgColorHex = p['fg']!;
+                            });
+                          },
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: Color(p['fg']!),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF2D3142) : Colors.transparent,
+                                width: 3,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                if (habit != null)
+                  TextButton(
+                    onPressed: () {
+                      context.read<AppProvider>().deleteHabit(habit.id!);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('DELETE', style: TextStyle(color: Colors.redAccent)),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (titleController.text.isNotEmpty) {
+                      if (habit == null) {
+                        final newHabit = Habit(
+                          title: titleController.text,
+                          subtitle: subtitleController.text.isEmpty ? 'Daily' : subtitleController.text,
+                          iconCodePoint: Icons.star_rounded.codePoint,
+                          colorHex: selectedFgColorHex,
+                          bgColorHex: selectedBgColorHex,
+                          createdAt: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+                        );
+                        context.read<AppProvider>().addHabit(newHabit);
+                      } else {
+                        habit.title = titleController.text;
+                        habit.subtitle = subtitleController.text.isEmpty ? 'Daily' : subtitleController.text;
+                        habit.colorHex = selectedFgColorHex;
+                        habit.bgColorHex = selectedBgColorHex;
+                        context.read<AppProvider>().updateHabit(habit);
+                      }
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7CB342),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('SAVE', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+    
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF7CB342)));
+    }
+
+    final days = _generateSurroundingDays();
+
+    // Separate habits into focus vs normal
+    final focusHabits = provider.habits.where((h) => h.isCurrentFocus).toList();
+    final normalHabits = provider.habits.where((h) => !h.isCurrentFocus).toList();
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Padding(
@@ -39,11 +177,11 @@ class _HomeViewState extends State<HomeView> {
           children: [
             const SizedBox(height: 12),
             // ─── Header ───
-            _buildHeader(),
+            _buildHeader(provider.currentStreak),
             const SizedBox(height: 24),
 
             // ─── Date Selector ───
-            _buildDateSelector(),
+            _buildDateSelector(provider, days),
             const SizedBox(height: 32),
 
             // ─── Morning Routine Section ───
@@ -51,33 +189,26 @@ class _HomeViewState extends State<HomeView> {
             const SizedBox(height: 20),
 
             // ─── Current Focus (Hero Card) ───
-            _buildHeroCard(),
-            const SizedBox(height: 16),
+            if (focusHabits.isNotEmpty) ...[
+              _buildChicletHabitCard(context, focusHabits.first, provider, isHero: true),
+              const SizedBox(height: 16),
+            ] else ...[
+               const Center(child: Text("No Focus Habit Set", style: TextStyle(color: Colors.grey))),
+               const SizedBox(height: 16),
+            ],
 
             // ─── Habit Cards ───
-            HabitCard(
-              title: 'Hydrate',
-              subtitle: '500ml of water',
-              icon: Icons.water_drop_rounded,
-              iconBgColor: const Color(0xFFE3F2FD),
-              iconColor: const Color(0xFF42A5F5),
-              isChecked: _habitStates[1]!,
-              onToggle: () => setState(() => _habitStates[1] = !_habitStates[1]!),
-            ),
-            const SizedBox(height: 12),
-            HabitCard(
-              title: 'Mindfulness',
-              subtitle: 'Deep breathing exercise',
-              icon: Icons.self_improvement_rounded,
-              iconBgColor: const Color(0xFFE8F5E9),
-              iconColor: const Color(0xFF66BB6A),
-              isChecked: _habitStates[2]!,
-              onToggle: () => setState(() => _habitStates[2] = !_habitStates[2]!),
-            ),
-            const SizedBox(height: 20),
+            ...normalHabits.map((habit) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: _buildChicletHabitCard(context, habit, provider, isHero: false),
+              );
+            }),
+            
+            const SizedBox(height: 8),
 
             // ─── Create a New Habit Button ───
-            _buildCreateHabitButton(),
+            _buildCreateHabitButton(context),
             const SizedBox(height: 24),
 
             // ─── Quote of the Day ───
@@ -89,14 +220,10 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  HEADER: "Today" + streak badge + gear
-  // ────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _buildHeader(int streak) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // "Today" text
         const Text(
           'Today',
           style: TextStyle(
@@ -107,7 +234,6 @@ class _HomeViewState extends State<HomeView> {
         ),
         Row(
           children: [
-            // Streak badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -118,14 +244,14 @@ class _HomeViewState extends State<HomeView> {
                   width: 1,
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('🔥', style: TextStyle(fontSize: 16)),
-                  SizedBox(width: 4),
+                  const Text('🔥', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 4),
                   Text(
-                    '7',
-                    style: TextStyle(
+                    '$streak',
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF558B2F),
@@ -135,7 +261,6 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
             const SizedBox(width: 12),
-            // Settings gear
             Container(
               width: 40,
               height: 40,
@@ -162,10 +287,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  DATE SELECTOR with Chiclet buttons
-  // ────────────────────────────────────────
-  Widget _buildDateSelector() {
+  Widget _buildDateSelector(AppProvider provider, List<DateTime> days) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       decoration: BoxDecoration(
@@ -181,15 +303,20 @@ class _HomeViewState extends State<HomeView> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(_days.length, (index) {
-          final isSelected = index == _selectedDayIndex;
+        children: days.map((date) {
+          final isSelected = date.year == provider.selectedDate.year &&
+                             date.month == provider.selectedDate.month &&
+                             date.day == provider.selectedDate.day;
+          
+          final dayName = DateFormat('E').format(date).toUpperCase(); // e.g. MON
+          
           return _buildDayItem(
-            _days[index]['day'],
-            _days[index]['date'],
+            dayName,
+            date.day,
             isSelected,
-            () => setState(() => _selectedDayIndex = index),
+            () => provider.setSelectedDate(date),
           );
-        }),
+        }).toList(),
       ),
     );
   }
@@ -261,9 +388,6 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  SECTION TITLE: ☀️ MORNING ROUTINE
-  // ────────────────────────────────────────
   Widget _buildSectionTitle() {
     return Row(
       children: [
@@ -289,21 +413,21 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  HERO CARD: Current Focus habit (green)
-  // ────────────────────────────────────────
-  Widget _buildHeroCard() {
-    final isChecked = _habitStates[0]!;
+  Widget _buildChicletHabitCard(BuildContext context, Habit habit, AppProvider provider, {bool isHero = false}) {
+    final isChecked = provider.isHabitCompletedOnSelectedDate(habit.id!);
+    final fgColor = Color(habit.colorHex);
+    final bgColor = Color(habit.bgColorHex);
+    
     return ChicletAnimatedButton(
       onPressed: () {
-        setState(() => _habitStates[0] = !_habitStates[0]!);
+        provider.toggleHabitCompletion(habit.id!);
       },
       width: double.infinity,
       height: 110,
       buttonHeight: 5,
       borderRadius: 24,
-      backgroundColor: const Color(0xFF7CB342),
-      buttonColor: const Color(0xFF558B2F),
+      backgroundColor: fgColor,
+      buttonColor: bgColor,
       padding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -314,19 +438,23 @@ class _HomeViewState extends State<HomeView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'CURRENT FOCUS',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white.withValues(alpha: 0.8),
-                      letterSpacing: 1.2,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        isHero ? 'CURRENT FOCUS' : 'HABIT',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.8),
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'My first habit',
-                    style: TextStyle(
+                  const SizedBox(height: 4),
+                  Text(
+                    habit.title,
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -334,7 +462,7 @@ class _HomeViewState extends State<HomeView> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Every morning • 15 mins',
+                    habit.subtitle,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.white.withValues(alpha: 0.85),
@@ -343,7 +471,19 @@ class _HomeViewState extends State<HomeView> {
                 ],
               ),
             ),
-            // Checkbox
+            GestureDetector(
+              onTap: () => _showHabitDialog(context, habit: habit),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+            const SizedBox(width: 12),
             Container(
               width: 42,
               height: 42,
@@ -358,8 +498,7 @@ class _HomeViewState extends State<HomeView> {
                 ),
               ),
               child: isChecked
-                  ? const Icon(Icons.check_rounded,
-                      size: 26, color: Color(0xFF7CB342))
+                  ? Icon(Icons.check_rounded, size: 26, color: fgColor)
                   : null,
             ),
           ],
@@ -368,12 +507,9 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  CREATE A NEW HABIT BUTTON (Chiclet)
-  // ────────────────────────────────────────
-  Widget _buildCreateHabitButton() {
+  Widget _buildCreateHabitButton(BuildContext context) {
     return ChicletOutlinedAnimatedButton(
-      onPressed: () {},
+      onPressed: () => _showHabitDialog(context),
       width: double.infinity,
       height: 56,
       buttonHeight: 4,
@@ -409,9 +545,6 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ────────────────────────────────────────
-  //  QUOTE OF THE DAY
-  // ────────────────────────────────────────
   Widget _buildQuoteCard() {
     return Container(
       width: double.infinity,

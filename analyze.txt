@@ -1,0 +1,5 @@
+[warning] The '!' will have no effect because the receiver can't be null (D:\Projek\Vibe-App\dailybit\lib\screens\views\home_view.dart:145:78)
+[warning] The '!' will have no effect because the receiver can't be null (D:\Projek\Vibe-App\dailybit\lib\screens\views\home_view.dart:146:74)
+[warning] The '!' will have no effect because the receiver can't be null (D:\Projek\Vibe-App\dailybit\lib\screens\views\home_view.dart:360:71)
+[warning] The '!' will have no effect because the receiver can't be null (D:\Projek\Vibe-App\dailybit\lib\screens\views\home_view.dart:363:48)
+[error] The named parameter 'directory' is required, but there's no corresponding argument (D:\Projek\Vibe-App\dailybit\lib\services\database_helper.dart:24:41)

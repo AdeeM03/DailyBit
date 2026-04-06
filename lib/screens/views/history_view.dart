@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:chiclet/chiclet.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
+import '../../providers/app_provider.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -11,19 +13,24 @@ class HistoryView extends StatefulWidget {
 
 class _HistoryViewState extends State<HistoryView> {
   // Current month for calendar
-  int _currentMonth = 4; // April
-  int _currentYear = 2026;
-  final int _today = 14;
+  int _currentMonth = DateTime.now().month;
+  int _currentYear = DateTime.now().year;
+  final int _today = DateTime.now().day;
 
-  // Hardcoded completed days for April 2026
-  final Set<int> _completedDays = {1, 2, 3, 6, 7, 8, 9, 10, 11, 13, 14};
-
-  // Weekly intensity data (0.0 - 1.0)
+  // Weekly intensity data (0.0 - 1.0) - kept dummy for now as it's complex to aggregate
   final List<double> _weeklyIntensity = [0.6, 0.75, 0.9, 0.7, 0.5, 0.3, 0.4];
   final List<String> _dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppProvider>();
+
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF7CB342)));
+    }
+
+    final completedDays = provider.getCompletedDaysInMonth(_currentYear, _currentMonth);
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Padding(
@@ -33,19 +40,19 @@ class _HistoryViewState extends State<HistoryView> {
           children: [
             const SizedBox(height: 12),
             // ─── Header ───
-            _buildHeader(),
+            _buildHeader(provider.currentStreak),
             const SizedBox(height: 24),
 
             // ─── Stats Cards ───
-            _buildStatsRow(),
+            _buildStatsRow(provider.currentStreak, provider.totalHabitsFinished),
             const SizedBox(height: 12),
-            _buildCompletionCard(),
+            _buildCompletionCard(provider.completionRate),
             const SizedBox(height: 28),
 
             // ─── Calendar Section ───
             _buildCalendarHeader(),
             const SizedBox(height: 20),
-            _buildCalendarGrid(),
+            _buildCalendarGrid(completedDays),
             const SizedBox(height: 32),
 
             // ─── Weekly Intensity ───
@@ -64,7 +71,7 @@ class _HistoryViewState extends State<HistoryView> {
   // ────────────────────────────────────────
   //  HEADER: Back arrow + title + streak
   // ────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _buildHeader(int streak) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -94,14 +101,14 @@ class _HistoryViewState extends State<HistoryView> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('🔥', style: TextStyle(fontSize: 16)),
-              SizedBox(width: 4),
+              const Text('🔥', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 4),
               Text(
-                '7',
-                style: TextStyle(
+                '$streak',
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF558B2F),
@@ -117,7 +124,7 @@ class _HistoryViewState extends State<HistoryView> {
   // ────────────────────────────────────────
   //  STATS CARDS ROW
   // ────────────────────────────────────────
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(int streak, int finished) {
     return Row(
       children: [
         Expanded(
@@ -126,7 +133,7 @@ class _HistoryViewState extends State<HistoryView> {
             iconColor: const Color(0xFF7CB342),
             iconBgColor: const Color(0xFFE8F5E9),
             label: 'ACTIVE',
-            value: '14',
+            value: '$streak',
             subtitle: 'Current Streak',
           ),
         ),
@@ -136,7 +143,7 @@ class _HistoryViewState extends State<HistoryView> {
             icon: Icons.check_circle_outline_rounded,
             iconColor: const Color(0xFF7CB342),
             iconBgColor: const Color(0xFFE8F5E9),
-            value: '182',
+            value: '$finished',
             subtitle: 'Habits Finished',
           ),
         ),
@@ -220,7 +227,8 @@ class _HistoryViewState extends State<HistoryView> {
   // ────────────────────────────────────────
   //  COMPLETION RATE CARD
   // ────────────────────────────────────────
-  Widget _buildCompletionCard() {
+  Widget _buildCompletionCard(double rate) {
+    int percentage = (rate * 100).toInt();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -251,9 +259,9 @@ class _HistoryViewState extends State<HistoryView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '94%',
-                style: TextStyle(
+              Text(
+                '$percentage%',
+                style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF2D3142),
@@ -362,7 +370,7 @@ class _HistoryViewState extends State<HistoryView> {
   // ────────────────────────────────────────
   //  CALENDAR GRID
   // ────────────────────────────────────────
-  Widget _buildCalendarGrid() {
+  Widget _buildCalendarGrid(Set<int> completedDays) {
     // Day headers
     final dayHeaders = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 
@@ -388,12 +396,14 @@ class _HistoryViewState extends State<HistoryView> {
     }
 
     // Current month days
+    final now = DateTime.now();
     for (int day = 1; day <= daysInMonth; day++) {
+      final isToday = _currentYear == now.year && _currentMonth == now.month && day == _today;
       dayWidgets.add(_buildCalendarDay(
         day,
         isCurrentMonth: true,
-        isCompleted: _completedDays.contains(day),
-        isToday: day == _today,
+        isCompleted: completedDays.contains(day),
+        isToday: isToday,
       ));
     }
 
