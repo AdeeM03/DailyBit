@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:chiclet/chiclet.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_provider.dart';
 import '../../models/habit.dart';
 
@@ -50,7 +52,7 @@ class _HomeViewState extends State<HomeView> {
             return AlertDialog(
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: Text(habit == null ? 'Create New Habit' : 'Edit Habit', style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(habit == null ? 'Create New Habit' : 'Edit Habit', style: GoogleFonts.fredoka(fontWeight: FontWeight.bold, fontSize: 20)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -72,7 +74,7 @@ class _HomeViewState extends State<HomeView> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Card Color', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+                    Text('Card Color', style: GoogleFonts.fredoka(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 12,
@@ -111,11 +113,11 @@ class _HomeViewState extends State<HomeView> {
                       context.read<AppProvider>().deleteHabit(habit.id!);
                       Navigator.pop(context);
                     },
-                    child: const Text('DELETE', style: TextStyle(color: Colors.redAccent)),
+                    child: Text('DELETE', style: GoogleFonts.fredoka(color: Colors.redAccent, fontWeight: FontWeight.w600)),
                   ),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+                  child: Text('CANCEL', style: GoogleFonts.nunito(color: Colors.grey, fontWeight: FontWeight.w700)),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -124,7 +126,7 @@ class _HomeViewState extends State<HomeView> {
                         final newHabit = Habit(
                           title: titleController.text,
                           subtitle: subtitleController.text.isEmpty ? 'Daily' : subtitleController.text,
-                          iconCodePoint: Icons.star_rounded.codePoint,
+                          iconCodePoint: FontAwesomeIcons.solidStar.codePoint,
                           colorHex: selectedFgColorHex,
                           bgColorHex: selectedBgColorHex,
                           createdAt: DateFormat('yyyy-MM-dd').format(DateTime.now()),
@@ -144,7 +146,7 @@ class _HomeViewState extends State<HomeView> {
                     backgroundColor: const Color(0xFF7CB342),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('SAVE', style: TextStyle(color: Colors.white)),
+                  child: Text('SAVE', style: GoogleFonts.fredoka(color: Colors.white, fontWeight: FontWeight.w700)),
                 ),
               ],
             );
@@ -224,12 +226,12 @@ class _HomeViewState extends State<HomeView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
+        Text(
           'Today',
-          style: TextStyle(
+          style: GoogleFonts.fredoka(
             fontSize: 28,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF2D3142),
+            color: const Color(0xFF2D3142),
           ),
         ),
         Row(
@@ -247,14 +249,14 @@ class _HomeViewState extends State<HomeView> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🔥', style: TextStyle(fontSize: 16)),
+                  const FaIcon(FontAwesomeIcons.fire, color: Colors.orange, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     '$streak',
-                    style: const TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF558B2F),
+                      color: const Color(0xFF558B2F),
                     ),
                   ),
                 ],
@@ -275,10 +277,12 @@ class _HomeViewState extends State<HomeView> {
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.settings_outlined,
-                color: Color(0xFF2D3142),
-                size: 22,
+              child: const Center(
+                child: FaIcon(
+                  FontAwesomeIcons.gear,
+                  color: Color(0xFF2D3142),
+                  size: 20,
+                ),
               ),
             ),
           ],
@@ -327,10 +331,10 @@ class _HomeViewState extends State<HomeView> {
         children: [
           Text(
             day,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF7CB342),
+              color: const Color(0xFF7CB342),
               letterSpacing: 0.5,
             ),
           ),
@@ -345,7 +349,7 @@ class _HomeViewState extends State<HomeView> {
             buttonColor: const Color(0xFF558B2F),
             child: Text(
               '$date',
-              style: const TextStyle(
+              style: GoogleFonts.fredoka(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: Colors.white,
@@ -362,7 +366,7 @@ class _HomeViewState extends State<HomeView> {
         children: [
           Text(
             day,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade500,
@@ -376,7 +380,7 @@ class _HomeViewState extends State<HomeView> {
             alignment: Alignment.center,
             child: Text(
               '$date',
-              style: TextStyle(
+              style: GoogleFonts.fredoka(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Colors.grey.shade700,
@@ -391,14 +395,14 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildSectionTitle() {
     return Row(
       children: [
-        const Text('☀️', style: TextStyle(fontSize: 18)),
+        const FaIcon(FontAwesomeIcons.solidSun, color: Colors.amber, size: 18),
         const SizedBox(width: 8),
-        const Text(
+        Text(
           'MORNING ROUTINE',
-          style: TextStyle(
+          style: GoogleFonts.fredoka(
             fontSize: 14,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF2D3142),
+            color: const Color(0xFF2D3142),
             letterSpacing: 1.5,
           ),
         ),
@@ -442,7 +446,7 @@ class _HomeViewState extends State<HomeView> {
                     children: [
                       Text(
                         isHero ? 'CURRENT FOCUS' : 'HABIT',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: Colors.white.withValues(alpha: 0.8),
@@ -454,7 +458,7 @@ class _HomeViewState extends State<HomeView> {
                   const SizedBox(height: 4),
                   Text(
                     habit.title,
-                    style: const TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -463,7 +467,7 @@ class _HomeViewState extends State<HomeView> {
                   const SizedBox(height: 4),
                   Text(
                     habit.subtitle,
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 13,
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
@@ -480,7 +484,7 @@ class _HomeViewState extends State<HomeView> {
                   color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+                child: const Center(child: FaIcon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 16)),
               ),
             ),
             const SizedBox(width: 12),
@@ -498,7 +502,7 @@ class _HomeViewState extends State<HomeView> {
                 ),
               ),
               child: isChecked
-                  ? Icon(Icons.check_rounded, size: 26, color: fgColor)
+                  ? Center(child: FaIcon(FontAwesomeIcons.check, size: 20, color: fgColor))
                   : null,
             ),
           ],
@@ -528,15 +532,15 @@ class _HomeViewState extends State<HomeView> {
               color: Color(0xFF7CB342),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.add, color: Colors.white, size: 18),
+            child: const Center(child: FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 14)),
           ),
           const SizedBox(width: 12),
-          const Text(
+          Text(
             'CREATE A NEW HABIT',
-            style: TextStyle(
+            style: GoogleFonts.fredoka(
               fontSize: 14,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF2D3142),
+              color: const Color(0xFF2D3142),
               letterSpacing: 1,
             ),
           ),
@@ -558,7 +562,7 @@ class _HomeViewState extends State<HomeView> {
         children: [
           Text(
             'QUOTE OF THE DAY',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: Colors.grey.shade500,
@@ -566,13 +570,13 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             '"We are what we repeatedly do. Excellence, then, is not an act, but a habit."',
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 17,
               fontWeight: FontWeight.w600,
               fontStyle: FontStyle.italic,
-              color: Color(0xFF2D3142),
+              color: const Color(0xFF2D3142),
               height: 1.5,
             ),
           ),

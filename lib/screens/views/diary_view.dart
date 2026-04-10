@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:chiclet/chiclet.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_provider.dart';
 import '../../models/diary_entry.dart';
 
@@ -26,7 +28,7 @@ class _DiaryViewState extends State<DiaryView> {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text("Write Today's Note", style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text("Write Today's Note", style: GoogleFonts.fredoka(fontWeight: FontWeight.bold, fontSize: 20)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -51,7 +53,7 @@ class _DiaryViewState extends State<DiaryView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('CANCEL', style: TextStyle(color: Colors.grey)),
+              child: Text('CANCEL', style: GoogleFonts.nunito(color: Colors.grey, fontWeight: FontWeight.w700)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -73,7 +75,7 @@ class _DiaryViewState extends State<DiaryView> {
                 backgroundColor: const Color(0xFF7CB342),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('SAVE', style: TextStyle(color: Colors.white)),
+              child: Text('SAVE', style: GoogleFonts.fredoka(color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ],
         );
@@ -154,7 +156,7 @@ class _DiaryViewState extends State<DiaryView> {
               backgroundColor: const Color(0xFF7CB342),
               elevation: 0,
               shape: const CircleBorder(),
-              child: const Icon(Icons.edit_rounded, color: Colors.white, size: 24),
+              child: const Center(child: FaIcon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 24)),
             ),
           ),
         ),
@@ -175,13 +177,16 @@ class _DiaryViewState extends State<DiaryView> {
                 color: const Color(0xFFE8F5E9),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.eco_rounded,
-                  color: Color(0xFF7CB342), size: 18),
+              child: const Center(
+                child: FaIcon(FontAwesomeIcons.leaf,
+                    color: Color(0xFF7CB342), size: 18),
+              ),
             ),
             const SizedBox(width: 10),
             const Text(
               'Daily Diary',
               style: TextStyle(
+                fontFamily: 'Fredoka',
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF2D3142),
@@ -201,14 +206,14 @@ class _DiaryViewState extends State<DiaryView> {
             children: [
               Text(
                 '$streak Day Streak',
-                style: const TextStyle(
+                style: GoogleFonts.fredoka(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF558B2F),
+                  color: const Color(0xFF558B2F),
                 ),
               ),
               const SizedBox(width: 4),
-              const Text('✨', style: TextStyle(fontSize: 14)),
+              const FaIcon(FontAwesomeIcons.wandMagicSparkles, color: Colors.amber, size: 14),
             ],
           ),
         ),
@@ -235,9 +240,9 @@ class _DiaryViewState extends State<DiaryView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Write Today's Note",
-                    style: TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -246,7 +251,7 @@ class _DiaryViewState extends State<DiaryView> {
                   const SizedBox(height: 4),
                   Text(
                     'Record your wins & reflections',
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 13,
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
@@ -261,8 +266,10 @@ class _DiaryViewState extends State<DiaryView> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.format_list_bulleted_rounded,
-                  color: Colors.white, size: 22),
+              child: const Center(
+                child: FaIcon(FontAwesomeIcons.list,
+                    color: Colors.white, size: 18),
+              ),
             ),
           ],
         ),
@@ -296,7 +303,7 @@ class _DiaryViewState extends State<DiaryView> {
               ),
               child: Text(
                 _filters[index],
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: isSelected ? Colors.white : Colors.grey.shade700,
@@ -314,10 +321,10 @@ class _DiaryViewState extends State<DiaryView> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: GoogleFonts.fredoka(
             fontSize: 20,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF2D3142),
+            color: const Color(0xFF2D3142),
           ),
         ),
         const SizedBox(width: 12),
@@ -365,16 +372,16 @@ class _DiaryViewState extends State<DiaryView> {
                   children: [
                     Text(
                       entry.dateLabel,
-                      style: const TextStyle(
+                      style: GoogleFonts.fredoka(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF2D3142),
+                        color: const Color(0xFF2D3142),
                       ),
                     ),
                     if (entry.mood.isNotEmpty)
                       Text(
                         entry.mood,
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: Color(entry.emojiColorHex),
@@ -384,13 +391,13 @@ class _DiaryViewState extends State<DiaryView> {
                   ],
                 ),
               ),
-              Icon(Icons.more_horiz, color: Colors.grey.shade400, size: 22),
+              FaIcon(FontAwesomeIcons.ellipsis, color: Colors.grey.shade400, size: 18),
             ],
           ),
           const SizedBox(height: 14),
           Text(
             entry.body,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: Colors.grey.shade700,
               height: 1.6,
@@ -442,16 +449,16 @@ class _DiaryViewState extends State<DiaryView> {
                 const SizedBox(height: 10),
                 Text(
                   smallEntry.dateLabel,
-                  style: const TextStyle(
+                  style: GoogleFonts.fredoka(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D3142),
+                    color: const Color(0xFF2D3142),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   smallEntry.body,
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 12,
                     color: Colors.grey.shade500,
                     height: 1.4,
@@ -485,13 +492,14 @@ class _DiaryViewState extends State<DiaryView> {
                     color: Colors.white.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 20),
+                  child: const Center(child: FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 18)),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'VIEW ALL\nHISTORY',
                   textAlign: TextAlign.center,
                   style: TextStyle(
+                    fontFamily: 'Fredoka',
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,

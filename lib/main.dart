@@ -27,20 +27,31 @@ class DailybitApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // Palet Warna Utama (Mint Green Pastel)
-        scaffoldBackgroundColor: const Color(0xFFF5F9F7), // Putih kehijauan sangat lembut
-        primaryColor: const Color(0xFFD4EBE1), // Mint Green
+        scaffoldBackgroundColor: const Color(0xFFF5F9F7),
+        primaryColor: const Color(0xFFD4EBE1),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFFD4EBE1),
-          primary: const Color(0xFF6B9B85), // Hijau agak gelap untuk teks/icon aktif
-          secondary: const Color(0xFFFFD6B3), // Warna aksen pastel untuk Pibo/Highlight
+          primary: const Color(0xFF6B9B85),
+          secondary: const Color(0xFFFFD6B3),
         ),
-        // Gunakan font modern dan membulat, cocok untuk desain minimalis
+        // Nunito for body text globally
         textTheme: GoogleFonts.nunitoTextTheme(
           Theme.of(context).textTheme,
+        ).copyWith(
+          // Override display/headline styles with Fredoka
+          displayLarge: GoogleFonts.fredoka(fontSize: 57, fontWeight: FontWeight.w800, color: const Color(0xFF2D3142)),
+          displayMedium: GoogleFonts.fredoka(fontSize: 45, fontWeight: FontWeight.w800, color: const Color(0xFF2D3142)),
+          displaySmall: GoogleFonts.fredoka(fontSize: 36, fontWeight: FontWeight.w800, color: const Color(0xFF2D3142)),
+          headlineLarge: GoogleFonts.fredoka(fontSize: 32, fontWeight: FontWeight.w800, color: const Color(0xFF2D3142)),
+          headlineMedium: GoogleFonts.fredoka(fontSize: 28, fontWeight: FontWeight.w700, color: const Color(0xFF2D3142)),
+          headlineSmall: GoogleFonts.fredoka(fontSize: 24, fontWeight: FontWeight.w700, color: const Color(0xFF2D3142)),
+          titleLarge: GoogleFonts.fredoka(fontSize: 22, fontWeight: FontWeight.w700, color: const Color(0xFF2D3142)),
+          titleMedium: GoogleFonts.fredoka(fontSize: 16, fontWeight: FontWeight.w600, color: const Color(0xFF2D3142)),
+          titleSmall: GoogleFonts.fredoka(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF2D3142)),
         ),
-        useMaterial3: true, // Wajib diaktifkan untuk desain modern
+        useMaterial3: true,
       ),
       home: const OnboardingScreen(),
     );
   }
-}
+}

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TaskCard extends StatefulWidget {
   final String title;
@@ -48,7 +50,7 @@ class _TaskCardState extends State<TaskCard> {
                 children: [
                   Text(
                     widget.title,
-                    style: TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: _isChecked ? Colors.grey.shade400 : const Color(0xFF2D3142),
@@ -58,7 +60,7 @@ class _TaskCardState extends State<TaskCard> {
                   const SizedBox(height: 4),
                   Text(
                     widget.subtitle,
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 12,
                       color: Colors.grey.shade500,
                     ),
@@ -66,13 +68,13 @@ class _TaskCardState extends State<TaskCard> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
+                      FaIcon(FontAwesomeIcons.clock, size: 14, color: Colors.grey.shade600),
                       const SizedBox(width: 4),
-                      Text('Every week', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text('Every week', style: GoogleFonts.nunito(fontSize: 12, color: Colors.grey.shade600)),
                       const SizedBox(width: 16),
-                      Icon(Icons.bar_chart, size: 14, color: Colors.grey.shade600),
+                      FaIcon(FontAwesomeIcons.chartSimple, size: 14, color: Colors.grey.shade600),
                       const SizedBox(width: 4),
-                      Text('Complexity: 5', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text('Complexity: 5', style: GoogleFonts.nunito(fontSize: 12, color: Colors.grey.shade600)),
                     ],
                   )
                 ],
@@ -90,7 +92,7 @@ class _TaskCardState extends State<TaskCard> {
                 ),
               ),
               child: _isChecked 
-                  ? const Icon(Icons.check, size: 18, color: Colors.white)
+                  ? const Center(child: FaIcon(FontAwesomeIcons.check, size: 14, color: Colors.white))
                   : null,
             ),
           ],

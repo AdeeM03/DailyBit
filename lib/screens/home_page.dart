@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'views/home_view.dart';
 import 'views/diary_view.dart';
 import 'views/history_view.dart';
@@ -52,29 +54,29 @@ class _HomePageState extends State<HomePage> {
               children: [
                 _buildNavItem(
                   index: 0,
-                  icon: Icons.check_circle_outline_rounded,
-                  activeIcon: Icons.check_circle_rounded,
+                  icon: FontAwesomeIcons.circleCheck,
+                  activeIcon: FontAwesomeIcons.solidCircleCheck,
                   label: 'TODAY',
                   useBadge: true,
                 ),
                 _buildNavItem(
                   index: 1,
-                  icon: Icons.menu_book_outlined,
-                  activeIcon: Icons.menu_book_rounded,
+                  icon: FontAwesomeIcons.book,
+                  activeIcon: FontAwesomeIcons.bookOpen,
                   label: 'DIARY',
                   useBadge: true,
                 ),
                 _buildNavItem(
                   index: 2,
-                  icon: Icons.history_rounded,
-                  activeIcon: Icons.history_rounded,
+                  icon: FontAwesomeIcons.clockRotateLeft,
+                  activeIcon: FontAwesomeIcons.clockRotateLeft,
                   label: 'HISTORY',
                   useBadge: true,
                 ),
                 _buildNavItem(
                   index: 3,
-                  icon: Icons.person_outline_rounded,
-                  activeIcon: Icons.person_rounded,
+                  icon: FontAwesomeIcons.user,
+                  activeIcon: FontAwesomeIcons.solidUser,
                   label: 'ME',
                 ),
               ],
@@ -87,8 +89,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildNavItem({
     required int index,
-    required IconData icon,
-    required IconData activeIcon,
+    required dynamic icon,
+    required dynamic activeIcon,
     required String label,
     bool useBadge = false,
   }) {
@@ -111,18 +113,18 @@ class _HomePageState extends State<HomePage> {
                   color: Color(0xFF7CB342),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(activeIcon, color: Colors.white, size: 24),
+                child: FaIcon(activeIcon, color: Colors.white, size: 24),
               )
             else
-              Icon(
+              FaIcon(
                 isSelected ? activeIcon : icon,
                 color: color,
-                size: 26,
+                size: 24,
               ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.fredoka(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: color,

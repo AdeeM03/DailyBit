@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/task_card.dart';
 
 class CalendarView extends StatefulWidget {
@@ -19,12 +20,12 @@ class _CalendarViewState extends State<CalendarView> {
         // Top Header Section
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: const Text(
+          child: Text(
             'August, 13',
-            style: TextStyle(
+            style: GoogleFonts.fredoka(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2D3142),
+              color: const Color(0xFF2D3142),
             ),
           ),
         ),
@@ -69,17 +70,17 @@ class _CalendarViewState extends State<CalendarView> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Today Tasks',
-                        style: TextStyle(
+                        style: GoogleFonts.fredoka(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D3142),
+                          color: const Color(0xFF2D3142),
                         ),
                       ),
                       Text(
                         'See all',
-                        style: TextStyle(
+                        style: GoogleFonts.nunito(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.teal.shade400,
@@ -137,7 +138,7 @@ class _CalendarViewState extends State<CalendarView> {
           children: [
             Text(
               day,
-              style: TextStyle(
+              style: GoogleFonts.fredoka(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: isActive ? Colors.white : const Color(0xFF2D3142),
@@ -146,7 +147,7 @@ class _CalendarViewState extends State<CalendarView> {
             const SizedBox(height: 4),
             Text(
               weekday,
-              style: TextStyle(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 color: isActive ? Colors.white.withValues(alpha: 0.9) : Colors.grey.shade500,
               ),

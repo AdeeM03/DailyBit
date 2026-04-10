@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:chiclet/chiclet.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
+import 'package:google_fonts/google_fonts.dart';
 import '../../providers/app_provider.dart';
 
 class HistoryView extends StatefulWidget {
@@ -79,13 +81,14 @@ class _HistoryViewState extends State<HistoryView> {
           children: [
             GestureDetector(
               onTap: () {},
-              child: const Icon(Icons.arrow_back_ios_new_rounded,
+              child: const FaIcon(FontAwesomeIcons.chevronLeft,
                   color: Color(0xFF2D3142), size: 20),
             ),
             const SizedBox(width: 8),
             const Text(
               'Habit History',
               style: TextStyle(
+                fontFamily: 'Fredoka',
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF2D3142),
@@ -104,14 +107,14 @@ class _HistoryViewState extends State<HistoryView> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🔥', style: TextStyle(fontSize: 16)),
+              const FaIcon(FontAwesomeIcons.fire, color: Colors.orange, size: 16),
               const SizedBox(width: 4),
               Text(
                 '$streak',
-                style: const TextStyle(
+                style: GoogleFonts.fredoka(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF558B2F),
+                  color: const Color(0xFF558B2F),
                 ),
               ),
             ],
@@ -129,7 +132,7 @@ class _HistoryViewState extends State<HistoryView> {
       children: [
         Expanded(
           child: _buildStatCard(
-            icon: Icons.local_fire_department_rounded,
+            icon: FontAwesomeIcons.fireFlameCurved,
             iconColor: const Color(0xFF7CB342),
             iconBgColor: const Color(0xFFE8F5E9),
             label: 'ACTIVE',
@@ -140,7 +143,7 @@ class _HistoryViewState extends State<HistoryView> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
-            icon: Icons.check_circle_outline_rounded,
+            icon: FontAwesomeIcons.solidCircleCheck,
             iconColor: const Color(0xFF7CB342),
             iconBgColor: const Color(0xFFE8F5E9),
             value: '$finished',
@@ -152,7 +155,7 @@ class _HistoryViewState extends State<HistoryView> {
   }
 
   Widget _buildStatCard({
-    required IconData icon,
+    required dynamic icon,
     required Color iconColor,
     required Color iconBgColor,
     String? label,
@@ -184,13 +187,13 @@ class _HistoryViewState extends State<HistoryView> {
                   color: iconBgColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Center(child: FaIcon(icon, color: iconColor, size: 18)),
               ),
               if (label != null) ...[
                 const SizedBox(width: 8),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: Colors.grey.shade500,
@@ -203,17 +206,17 @@ class _HistoryViewState extends State<HistoryView> {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.fredoka(
               fontSize: 36,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF2D3142),
+              color: const Color(0xFF2D3142),
               height: 1,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade500,
@@ -252,8 +255,10 @@ class _HistoryViewState extends State<HistoryView> {
               color: const Color(0xFFE3F2FD),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.bar_chart_rounded,
-                color: Color(0xFF42A5F5), size: 20),
+            child: const Center(
+              child: FaIcon(FontAwesomeIcons.chartSimple,
+                  color: Color(0xFF42A5F5), size: 18),
+            ),
           ),
           const SizedBox(width: 16),
           Column(
@@ -261,17 +266,17 @@ class _HistoryViewState extends State<HistoryView> {
             children: [
               Text(
                 '$percentage%',
-                style: const TextStyle(
+                style: GoogleFonts.fredoka(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF2D3142),
+                  color: const Color(0xFF2D3142),
                   height: 1,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 'Completion Rate',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey.shade500,
@@ -303,16 +308,16 @@ class _HistoryViewState extends State<HistoryView> {
               children: [
                 Text(
                   '${months[_currentMonth]} $_currentYear',
-                  style: const TextStyle(
+                  style: GoogleFonts.fredoka(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF2D3142),
+                    color: const Color(0xFF2D3142),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Consistent growth this month',
-                  style: TextStyle(
+                  style: GoogleFonts.nunito(
                     fontSize: 13,
                     color: Colors.grey.shade500,
                     fontWeight: FontWeight.w500,
@@ -322,7 +327,7 @@ class _HistoryViewState extends State<HistoryView> {
             ),
             Row(
               children: [
-                _buildArrowButton(Icons.chevron_left_rounded, () {
+                _buildArrowButton(FontAwesomeIcons.chevronLeft, () {
                   setState(() {
                     if (_currentMonth > 1) {
                       _currentMonth--;
@@ -333,7 +338,7 @@ class _HistoryViewState extends State<HistoryView> {
                   });
                 }),
                 const SizedBox(width: 8),
-                _buildArrowButton(Icons.chevron_right_rounded, () {
+                _buildArrowButton(FontAwesomeIcons.chevronRight, () {
                   setState(() {
                     if (_currentMonth < 12) {
                       _currentMonth++;
@@ -351,7 +356,7 @@ class _HistoryViewState extends State<HistoryView> {
     );
   }
 
-  Widget _buildArrowButton(IconData icon, VoidCallback onTap) {
+  Widget _buildArrowButton(dynamic icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -362,7 +367,7 @@ class _HistoryViewState extends State<HistoryView> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.grey.shade200, width: 1.5),
         ),
-        child: Icon(icon, color: Colors.grey.shade600, size: 20),
+        child: Center(child: FaIcon(icon, color: Colors.grey.shade600, size: 16)),
       ),
     );
   }
@@ -443,7 +448,7 @@ class _HistoryViewState extends State<HistoryView> {
               child: Text(
                 d,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: Colors.grey.shade500,
@@ -531,6 +536,7 @@ class _HistoryViewState extends State<HistoryView> {
         const Text(
           'Weekly Intensity',
           style: TextStyle(
+            fontFamily: 'Fredoka',
             fontSize: 20,
             fontWeight: FontWeight.w800,
             color: Color(0xFF2D3142),
@@ -579,14 +585,14 @@ class _HistoryViewState extends State<HistoryView> {
                     child: Text(
                       _dayLabels[index],
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: isHighlighted
-                            ? const Color(0xFF7CB342)
-                            : Colors.grey.shade500,
-                        letterSpacing: 0.3,
-                      ),
+                      style: GoogleFonts.nunito(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: isHighlighted
+                          ? const Color(0xFF7CB342)
+                          : Colors.grey.shade500,
+                      letterSpacing: 0.3,
+                    ),
                     ),
                   );
                 }),
@@ -698,6 +704,7 @@ class _HistoryViewState extends State<HistoryView> {
               const Text(
                 'Your morning\nroutine is paying\noff.',
                 style: TextStyle(
+                  fontFamily: 'Fredoka',
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -707,7 +714,7 @@ class _HistoryViewState extends State<HistoryView> {
               const SizedBox(height: 14),
               Text(
                 'Completing habits before 9 AM has increased your focus by 40% this month.',
-                style: TextStyle(
+                style: GoogleFonts.nunito(
                   fontSize: 13,
                   color: Colors.white.withValues(alpha: 0.85),
                   height: 1.5,
@@ -724,11 +731,11 @@ class _HistoryViewState extends State<HistoryView> {
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
                 borderWidth: 1.5,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'READ ANALYSIS',
-                    style: TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,

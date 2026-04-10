@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -17,13 +19,13 @@ class ProfileView extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.arrow_back_ios, color: Color(0xFF2D3142)),
-                  const Text(
+                  const FaIcon(FontAwesomeIcons.chevronLeft, color: Color(0xFF2D3142), size: 20),
+                  Text(
                     'Profile',
-                    style: TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3142),
+                      color: const Color(0xFF2D3142),
                     ),
                   ),
                   Container(
@@ -32,7 +34,7 @@ class ProfileView extends StatelessWidget {
                       color: const Color(0xFFD4EBE1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.check, color: Color(0xFF1B3B36), size: 20),
+                    child: const Center(child: FaIcon(FontAwesomeIcons.check, color: Color(0xFF1B3B36), size: 16)),
                   ),
                 ],
               ),
@@ -50,7 +52,7 @@ class ProfileView extends StatelessWidget {
                       color: const Color(0xFFFDF0D5),
                       border: Border.all(color: Colors.white, width: 4),
                     ),
-                    child: const Icon(Icons.person, size: 60, color: Colors.orange), // Replaced image with icon for now
+                    child: const Center(child: FaIcon(FontAwesomeIcons.solidUser, size: 50, color: Colors.orange)),
                   ),
                   Container(
                     padding: const EdgeInsets.all(6),
@@ -59,19 +61,19 @@ class ProfileView extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: const Icon(Icons.edit, color: Colors.white, size: 16),
+                    child: const Center(child: FaIcon(FontAwesomeIcons.pen, color: Colors.white, size: 14)),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
               // Name & Badge
-              const Text(
+              Text(
                 'Abdullah Masykur',
-                style: TextStyle(
+                style: GoogleFonts.fredoka(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D3142),
+                  color: const Color(0xFF2D3142),
                 ),
               ),
               const SizedBox(height: 8),
@@ -83,13 +85,13 @@ class ProfileView extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.military_tech, color: Color(0xFF6B9B85), size: 16),
-                    SizedBox(width: 4),
+                  children: [
+                    const FaIcon(FontAwesomeIcons.medal, color: Color(0xFF6B9B85), size: 16),
+                    const SizedBox(width: 4),
                     Text(
                       '142 Tasks Completed',
-                      style: TextStyle(
-                        color: Color(0xFF6B9B85),
+                      style: GoogleFonts.nunito(
+                        color: const Color(0xFF6B9B85),
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -102,12 +104,12 @@ class ProfileView extends StatelessWidget {
               // Personal Details
               Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   'Personal Details',
-                  style: TextStyle(
+                  style: GoogleFonts.fredoka(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3142),
+                    color: const Color(0xFF2D3142),
                   ),
                 ),
               ),
@@ -123,17 +125,17 @@ class ProfileView extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Weekly Performance',
-                    style: TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3142),
+                      color: const Color(0xFF2D3142),
                     ),
                   ),
                   Text(
                     'LAST 7 DAYS',
-                    style: TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.tealAccent.shade400,
@@ -184,7 +186,7 @@ class ProfileView extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                             border: index == 27 ? Border.all(color: Colors.tealAccent.shade400, width: 1.5) : null,
                           ),
-                          child: index == 27 ? Icon(Icons.circle, size: 8, color: Colors.tealAccent.shade400) : null,
+                          child: index == 27 ? Center(child: FaIcon(FontAwesomeIcons.solidCircle, size: 8, color: Colors.tealAccent.shade400)) : null,
                         );
                       },
                     ),
@@ -215,10 +217,10 @@ class ProfileView extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: GoogleFonts.nunito(
             fontSize: 10,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF6B9B85), // primary color green
+            color: const Color(0xFF6B9B85),
             letterSpacing: 1.2,
           ),
         ),
@@ -233,9 +235,9 @@ class ProfileView extends StatelessWidget {
           ),
           child: Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.nunito(
               fontSize: 16,
-              color: Color(0xFF2D3142),
+              color: const Color(0xFF2D3142),
             ),
           ),
         ),

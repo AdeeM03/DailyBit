@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HabitCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final dynamic icon;
   final Color iconBgColor;
   final Color iconColor;
   final bool isChecked;
@@ -47,7 +49,7 @@ class HabitCard extends StatelessWidget {
                 color: iconBgColor,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: iconColor, size: 24),
+              child: Center(child: FaIcon(icon, color: iconColor, size: 20)),
             ),
             const SizedBox(width: 16),
             // Text
@@ -57,7 +59,7 @@ class HabitCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: GoogleFonts.fredoka(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: isChecked
@@ -70,7 +72,7 @@ class HabitCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: GoogleFonts.nunito(
                       fontSize: 13,
                       color: Colors.grey.shade500,
                     ),
@@ -93,7 +95,7 @@ class HabitCard extends StatelessWidget {
                 ),
               ),
               child: isChecked
-                  ? const Icon(Icons.check, size: 18, color: Colors.white)
+                  ? const Center(child: FaIcon(FontAwesomeIcons.check, size: 14, color: Colors.white))
                   : null,
             ),
           ],
