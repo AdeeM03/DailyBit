@@ -4,7 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/diary_provider.dart';
+import '../../providers/habit_provider.dart';
 import '../../models/diary_entry.dart';
 
 class DiaryView extends StatefulWidget {
@@ -60,6 +61,7 @@ class _DiaryViewState extends State<DiaryView> {
                 if (bodyController.text.isNotEmpty) {
                   final now = DateTime.now();
                   final newEntry = DiaryEntry(
+                    id: 0,
                     date: DateFormat('yyyy-MM-dd').format(now),
                     dateLabel: DateFormat('EEEE, MMM d').format(now),
                     emoji: '📝',
@@ -67,7 +69,7 @@ class _DiaryViewState extends State<DiaryView> {
                     mood: moodController.text.toUpperCase(),
                     body: bodyController.text,
                   );
-                  context.read<AppProvider>().addDiaryEntry(newEntry);
+                  context.read<DiaryProvider>().addDiaryEntry(newEntry);
                   Navigator.pop(context);
                 }
               },
@@ -85,7 +87,7 @@ class _DiaryViewState extends State<DiaryView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final provider = context.watch<DiaryProvider>();
     
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF7CB342)));
@@ -104,7 +106,7 @@ class _DiaryViewState extends State<DiaryView> {
               children: [
                 const SizedBox(height: 12),
                 // ─── Header ───
-                _buildHeader(provider.currentStreak),
+                _buildHeader(context.watch<HabitProvider>().currentStreak),
                 const SizedBox(height: 24),
 
                 // ─── Write Today's Note Card ───

@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/habit_provider.dart';
 import '../../models/habit.dart';
 
 class HomeView extends StatefulWidget {
@@ -110,7 +110,7 @@ class _HomeViewState extends State<HomeView> {
                 if (habit != null)
                   TextButton(
                     onPressed: () {
-                      context.read<AppProvider>().deleteHabit(habit.id!);
+                      context.read<HabitProvider>().deleteHabit(habit.id);
                       Navigator.pop(context);
                     },
                     child: Text('DELETE', style: GoogleFonts.fredoka(color: Colors.redAccent, fontWeight: FontWeight.w600)),
@@ -124,6 +124,7 @@ class _HomeViewState extends State<HomeView> {
                     if (titleController.text.isNotEmpty) {
                       if (habit == null) {
                         final newHabit = Habit(
+                          id: 0,
                           title: titleController.text,
                           subtitle: subtitleController.text.isEmpty ? 'Daily' : subtitleController.text,
                           iconCodePoint: FontAwesomeIcons.solidStar.codePoint,
@@ -131,13 +132,13 @@ class _HomeViewState extends State<HomeView> {
                           bgColorHex: selectedBgColorHex,
                           createdAt: DateFormat('yyyy-MM-dd').format(DateTime.now()),
                         );
-                        context.read<AppProvider>().addHabit(newHabit);
+                        context.read<HabitProvider>().addHabit(newHabit);
                       } else {
                         habit.title = titleController.text;
                         habit.subtitle = subtitleController.text.isEmpty ? 'Daily' : subtitleController.text;
                         habit.colorHex = selectedFgColorHex;
                         habit.bgColorHex = selectedBgColorHex;
-                        context.read<AppProvider>().updateHabit(habit);
+                        context.read<HabitProvider>().updateHabit(habit);
                       }
                       Navigator.pop(context);
                     }
@@ -158,7 +159,7 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final provider = context.watch<HabitProvider>();
     
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF7CB342)));
@@ -291,7 +292,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildDateSelector(AppProvider provider, List<DateTime> days) {
+  Widget _buildDateSelector(HabitProvider provider, List<DateTime> days) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
       decoration: BoxDecoration(
@@ -417,14 +418,14 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildChicletHabitCard(BuildContext context, Habit habit, AppProvider provider, {bool isHero = false}) {
-    final isChecked = provider.isHabitCompletedOnSelectedDate(habit.id!);
+  Widget _buildChicletHabitCard(BuildContext context, Habit habit, HabitProvider provider, {bool isHero = false}) {
+    final isChecked = provider.isHabitCompletedOnSelectedDate(habit.id);
     final fgColor = Color(habit.colorHex);
     final bgColor = Color(habit.bgColorHex);
     
     return ChicletAnimatedButton(
       onPressed: () {
-        provider.toggleHabitCompletion(habit.id!);
+        provider.toggleHabitCompletion(habit.id);
       },
       width: double.infinity,
       height: 110,
@@ -571,7 +572,7 @@ class _HomeViewState extends State<HomeView> {
           ),
           const SizedBox(height: 12),
           Text(
-            '"We are what we repeatedly do. Excellence, then, is not an act, but a habit."',
+            'Start where you are. Use what you have. Do what you can.',
             style: GoogleFonts.nunito(
               fontSize: 17,
               fontWeight: FontWeight.w600,

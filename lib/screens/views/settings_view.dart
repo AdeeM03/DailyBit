@@ -1,9 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../services/notification_service.dart';
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  bool _notificationsEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNotificationStatus();
+  }
+
+  Future<void> _checkNotificationStatus() async {
+    final hasNotifications = await NotificationService.instance.hasScheduledNotifications();
+    if (mounted) {
+      setState(() => _notificationsEnabled = hasNotifications);
+    }
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    if (value) {
+      final granted = await NotificationService.instance.requestPermission();
+      if (granted) {
+        await NotificationService.instance.scheduleDailyReminder(hour: 8, minute: 0);
+        if (mounted) setState(() => _notificationsEnabled = true);
+      }
+    } else {
+      await NotificationService.instance.cancelAll();
+      if (mounted) setState(() => _notificationsEnabled = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +72,7 @@ class SettingsView extends StatelessWidget {
                   children: [
                     _buildSettingsTile(FontAwesomeIcons.user, 'Edit Profile', true, false),
                     const Divider(height: 1, color: Color(0xFFF0F0F0)),
-                    _buildSettingsTile(FontAwesomeIcons.bell, 'Notifications', false, true),
+                    _buildNotificationTile(),
                     const Divider(height: 1, color: Color(0xFFF0F0F0)),
                     _buildSettingsTile(FontAwesomeIcons.globe, 'Language', true, false),
                     const Divider(height: 1, color: Color(0xFFF0F0F0)),
@@ -70,6 +104,40 @@ class SettingsView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNotificationTile() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F9F7),
+              shape: BoxShape.circle,
+            ),
+            child: Center(child: FaIcon(FontAwesomeIcons.bell, color: Colors.grey.shade600, size: 20)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Notifications',
+              style: GoogleFonts.nunito(
+                fontSize: 16,
+                color: const Color(0xFF2D3142),
+              ),
+            ),
+          ),
+          Switch(
+            value: _notificationsEnabled,
+            onChanged: _toggleNotifications,
+            activeThumbColor: Colors.white,
+            activeTrackColor: const Color(0xFF62B694),
+          ),
+        ],
+      ),
     );
   }
 

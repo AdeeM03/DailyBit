@@ -1,36 +1,23 @@
-import 'dart:convert';
+import 'package:isar_plus/isar_plus.dart';
 
+part 'habit_log.g.dart';
+
+@collection
 class HabitLog {
-  int? id;
-  int habitId;
-  String date; // Format: YYYY-MM-DD
-  bool isCompleted;
-
   HabitLog({
-    this.id,
+    required this.id,
     this.habitId = 0,
     this.date = '',
     this.isCompleted = false,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'habitId': habitId,
-      'date': date,
-      'isCompleted': isCompleted ? 1 : 0,
-    };
-  }
+  final int id;
 
-  factory HabitLog.fromMap(Map<String, dynamic> map) {
-    return HabitLog(
-      id: map['id'] as int?,
-      habitId: map['habitId'] as int,
-      date: map['date'] as String,
-      isCompleted: map['isCompleted'] == 1 || map['isCompleted'] == true,
-    );
-  }
+  @Index(composite: ['date'])
+  late int habitId;
 
-  String toJson() => json.encode(toMap());
-  factory HabitLog.fromJson(String source) => HabitLog.fromMap(json.decode(source));
+  @Index()
+  late String date; // Format: YYYY-MM-DD
+
+  late bool isCompleted;
 }

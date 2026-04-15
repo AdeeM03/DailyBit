@@ -1,147 +1,277 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:isar_plus/isar_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../models/habit.dart';
 import '../models/habit_log.dart';
 import '../models/diary_entry.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
-
   DatabaseHelper._init();
 
-  // Storage keys
-  static const String keyHabits = 'habits_list';
-  static const String keyHabitLogs = 'habit_logs_list';
-  static const String keyDiaryEntries = 'diary_entries_list';
-  static const String keySeeded = 'db_seeded';
+  late Isar _isar;
+  Isar get isar => _isar;
 
-  Future<SharedPreferences> get prefs async {
-    return await SharedPreferences.getInstance();
+  static const String _keyMigrated = 'data_migrated_to_isar';
+
+  /// Initialize Isar and optionally migrate data from SharedPreferences
+  Future<void> init(String directory) async {
+    // On web, Isar must be initialized explicitly
+    if (kIsWeb) {
+      await Isar.initialize();
+    }
+
+    _isar = Isar.open(
+      schemas: [HabitSchema, HabitLogSchema, DiaryEntrySchema],
+      directory: kIsWeb ? Isar.sqliteInMemory : directory,
+      engine: kIsWeb ? IsarEngine.sqlite : IsarEngine.isar,
+      inspector: !kIsWeb,
+    );
+
+    // Try to migrate old SharedPreferences data
+    await _migrateFromSharedPreferences();
+
+    // Auto-seed if DB is empty (fresh install)
+    await _autoSeed();
   }
 
-  Future<void> autoSeed() async {
-    final p = await prefs;
-    final isSeeded = p.getBool(keySeeded) ?? false;
-    
-    if (isSeeded) return;
+  // ─────── Platform-aware write helper ───────
+  Future<void> _write(void Function(Isar isar) operation) async {
+    if (kIsWeb) {
+      _isar.write(operation);
+    } else {
+      await _isar.writeAsync(operation);
+    }
+  }
+
+  // ─────────────────────────── DATA MIGRATION ───────────────────────────
+
+  Future<void> _migrateFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final alreadyMigrated = prefs.getBool(_keyMigrated) ?? false;
+
+    if (alreadyMigrated) return;
+
+    final oldHabits = prefs.getStringList('habits_list');
+    final oldLogs = prefs.getStringList('habit_logs_list');
+    final oldDiary = prefs.getStringList('diary_entries_list');
+
+    if (oldHabits == null && oldLogs == null && oldDiary == null) {
+      await prefs.setBool(_keyMigrated, true);
+      return;
+    }
+
+    if (oldHabits != null && oldHabits.isNotEmpty) {
+      await _write((isar) {
+        for (final jsonStr in oldHabits) {
+          final map = json.decode(jsonStr) as Map<String, dynamic>;
+          final habit = Habit(
+            id: map['id'] as int? ?? isar.habits.autoIncrement(),
+          )
+            ..title = map['title'] as String? ?? ''
+            ..subtitle = map['subtitle'] as String? ?? ''
+            ..iconCodePoint = map['iconCodePoint'] as int? ?? 0
+            ..iconFontFamily = map['iconFontFamily'] as String? ?? 'MaterialIcons'
+            ..colorHex = map['colorHex'] as int? ?? 0
+            ..bgColorHex = map['bgColorHex'] as int? ?? 0
+            ..isCurrentFocus = map['isCurrentFocus'] == 1 || map['isCurrentFocus'] == true
+            ..createdAt = map['createdAt'] as String? ?? '';
+          isar.habits.put(habit);
+        }
+      });
+    }
+
+    if (oldLogs != null && oldLogs.isNotEmpty) {
+      await _write((isar) {
+        for (final jsonStr in oldLogs) {
+          final map = json.decode(jsonStr) as Map<String, dynamic>;
+          final log = HabitLog(
+            id: map['id'] as int? ?? isar.habitLogs.autoIncrement(),
+          )
+            ..habitId = map['habitId'] as int? ?? 0
+            ..date = map['date'] as String? ?? ''
+            ..isCompleted = map['isCompleted'] == 1 || map['isCompleted'] == true;
+          isar.habitLogs.put(log);
+        }
+      });
+    }
+
+    if (oldDiary != null && oldDiary.isNotEmpty) {
+      await _write((isar) {
+        for (final jsonStr in oldDiary) {
+          final map = json.decode(jsonStr) as Map<String, dynamic>;
+          final entry = DiaryEntry(
+            id: map['id'] as int? ?? isar.diaryEntrys.autoIncrement(),
+          )
+            ..date = map['date'] as String? ?? ''
+            ..dateLabel = map['dateLabel'] as String? ?? ''
+            ..emoji = map['emoji'] as String? ?? ''
+            ..emojiColorHex = map['emojiColorHex'] as int? ?? 0
+            ..mood = map['mood'] as String? ?? ''
+            ..body = map['body'] as String? ?? '';
+          isar.diaryEntrys.put(entry);
+        }
+      });
+    }
+
+    await prefs.setBool(_keyMigrated, true);
+  }
+
+  // ─────────────────────────── AUTO SEED ───────────────────────────
+
+  Future<void> _autoSeed() async {
+    final existingHabits = _isar.habits.where().findAll();
+    if (existingHabits.isNotEmpty) return;
 
     final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-    // 1. Seed Habits
-    final habit1 = Habit(id: 1, title: 'My first habit', subtitle: 'Every morning • 15 mins', iconCodePoint: 0, iconFontFamily: 'MaterialIcons', colorHex: 0xFF7CB342, bgColorHex: 0xFF558B2F, isCurrentFocus: true, createdAt: todayStr);
-    final habit2 = Habit(id: 2, title: 'Hydrate', subtitle: '500ml of water', iconCodePoint: 0xe6b5, iconFontFamily: 'MaterialIcons', colorHex: 0xFF42A5F5, bgColorHex: 0xFFE3F2FD, isCurrentFocus: false, createdAt: todayStr);
-    final habit3 = Habit(id: 3, title: 'Mindfulness', subtitle: 'Deep breathing exercise', iconCodePoint: 0xe58b, iconFontFamily: 'MaterialIcons', colorHex: 0xFF66BB6A, bgColorHex: 0xFFE8F5E9, isCurrentFocus: false, createdAt: todayStr);
-    
-    await p.setStringList(keyHabits, [habit1.toJson(), habit2.toJson(), habit3.toJson()]);
+    await _write((isar) {
+      isar.habits.put(Habit(id: isar.habits.autoIncrement())
+        ..title = 'My first habit'
+        ..subtitle = 'Every morning • 15 mins'
+        ..iconCodePoint = 0
+        ..iconFontFamily = 'MaterialIcons'
+        ..colorHex = 0xFF7CB342
+        ..bgColorHex = 0xFF558B2F
+        ..isCurrentFocus = true
+        ..createdAt = todayStr);
 
-    // 2. Seed HabitLog
-    final log1 = HabitLog(id: 1, habitId: 1, date: todayStr, isCompleted: true);
-    await p.setStringList(keyHabitLogs, [log1.toJson()]);
+      isar.habits.put(Habit(id: isar.habits.autoIncrement())
+        ..title = 'Hydrate'
+        ..subtitle = '500ml of water'
+        ..iconCodePoint = 0xe6b5
+        ..iconFontFamily = 'MaterialIcons'
+        ..colorHex = 0xFF42A5F5
+        ..bgColorHex = 0xFFE3F2FD
+        ..isCurrentFocus = false
+        ..createdAt = todayStr);
 
-    // 3. Seed Diary Entries
-    final diary1 = DiaryEntry(id: 1, date: '2026-10-24', dateLabel: 'Monday, Oct 24', emoji: '😊', emojiColorHex: 0xFF7CB342, mood: 'ENERGETIC MORNING', body: 'Finally managed to finish the 30-minute meditation session.');
-    final diary2 = DiaryEntry(id: 2, date: '2026-10-23', dateLabel: 'Sunday, Oct 23', emoji: '🍃', emojiColorHex: 0xFF558B2F, mood: 'FOCUSED FLOW', body: 'Hit a 7-day streak today!');
-    await p.setStringList(keyDiaryEntries, [diary1.toJson(), diary2.toJson()]);
+      isar.habits.put(Habit(id: isar.habits.autoIncrement())
+        ..title = 'Mindfulness'
+        ..subtitle = 'Deep breathing exercise'
+        ..iconCodePoint = 0xe58b
+        ..iconFontFamily = 'MaterialIcons'
+        ..colorHex = 0xFF66BB6A
+        ..bgColorHex = 0xFFE8F5E9
+        ..isCurrentFocus = false
+        ..createdAt = todayStr);
 
-    await p.setBool(keySeeded, true);
+      isar.habitLogs.put(HabitLog(id: isar.habitLogs.autoIncrement())
+        ..habitId = 1
+        ..date = todayStr
+        ..isCompleted = true);
+
+      isar.diaryEntrys.put(DiaryEntry(id: isar.diaryEntrys.autoIncrement())
+        ..date = '2026-10-24'
+        ..dateLabel = 'Monday, Oct 24'
+        ..emoji = '😊'
+        ..emojiColorHex = 0xFF7CB342
+        ..mood = 'ENERGETIC MORNING'
+        ..body = 'Finally managed to finish the 30-minute meditation session.');
+
+      isar.diaryEntrys.put(DiaryEntry(id: isar.diaryEntrys.autoIncrement())
+        ..date = '2026-10-23'
+        ..dateLabel = 'Sunday, Oct 23'
+        ..emoji = '🍃'
+        ..emojiColorHex = 0xFF558B2F
+        ..mood = 'FOCUSED FLOW'
+        ..body = 'Hit a 7-day streak today!');
+    });
   }
 
-  // --- Habits CRUD ---
+  // ─────────────────────────── HABITS CRUD ───────────────────────────
+
   Future<List<Habit>> readAllHabits() async {
-    final p = await prefs;
-    final list = p.getStringList(keyHabits) ?? [];
-    return list.map((e) => Habit.fromJson(e)).toList();
+    return _isar.habits.where().findAll();
   }
 
   Future<Habit> createHabit(Habit habit) async {
-    final p = await prefs;
-    final habits = await readAllHabits();
-    
-    // Auto increment ID (JSON specific logic)
-    int nextId = 1;
-    if (habits.isNotEmpty) {
-      nextId = habits.map((h) => h.id ?? 0).reduce((a, b) => a > b ? a : b) + 1;
-    }
-    habit.id = nextId;
-    habits.add(habit);
-    
-    await p.setStringList(keyHabits, habits.map((e) => e.toJson()).toList());
-    return habit; 
+    final newHabit = Habit(id: _isar.habits.autoIncrement())
+      ..title = habit.title
+      ..subtitle = habit.subtitle
+      ..iconCodePoint = habit.iconCodePoint
+      ..iconFontFamily = habit.iconFontFamily
+      ..colorHex = habit.colorHex
+      ..bgColorHex = habit.bgColorHex
+      ..isCurrentFocus = habit.isCurrentFocus
+      ..createdAt = habit.createdAt;
+
+    await _write((isar) {
+      isar.habits.put(newHabit);
+    });
+    return newHabit;
   }
 
   Future<void> updateHabit(Habit habit) async {
-    final p = await prefs;
-    final habits = await readAllHabits();
-    final index = habits.indexWhere((h) => h.id == habit.id);
-    if (index != -1) {
-      habits[index] = habit;
-      await p.setStringList(keyHabits, habits.map((e) => e.toJson()).toList());
-    }
+    await _write((isar) {
+      isar.habits.put(habit);
+    });
   }
 
   Future<void> deleteHabit(int id) async {
-    final p = await prefs;
-    final habits = await readAllHabits();
-    habits.removeWhere((h) => h.id == id);
-    await p.setStringList(keyHabits, habits.map((e) => e.toJson()).toList());
+    await _write((isar) {
+      isar.habits.delete(id);
+    });
   }
 
-  // --- Habit Logs CRUD ---
+  // ─────────────────────────── HABIT LOGS ───────────────────────────
+
   Future<List<HabitLog>> getAllCompletedLogs() async {
-    final p = await prefs;
-    final list = p.getStringList(keyHabitLogs) ?? [];
-    final allLogs = list.map((e) => HabitLog.fromJson(e)).toList();
+    final allLogs = _isar.habitLogs.where().findAll();
     return allLogs.where((log) => log.isCompleted).toList();
   }
 
   Future<List<HabitLog>> getLogsForDate(String date) async {
-    final p = await prefs;
-    final list = p.getStringList(keyHabitLogs) ?? [];
-    final allLogs = list.map((e) => HabitLog.fromJson(e)).toList();
+    final allLogs = _isar.habitLogs.where().findAll();
     return allLogs.where((log) => log.date == date).toList();
   }
 
   Future<void> logHabitCompletion(int habitId, String date, bool isCompleted) async {
-    final p = await prefs;
-    final list = p.getStringList(keyHabitLogs) ?? [];
-    List<HabitLog> allLogs = list.map((e) => HabitLog.fromJson(e)).toList();
+    final allLogs = _isar.habitLogs.where().findAll();
+    final existing = allLogs.where(
+      (log) => log.habitId == habitId && log.date == date,
+    ).toList();
 
-    int existingIndex = allLogs.indexWhere((log) => log.habitId == habitId && log.date == date);
-    
-    if (existingIndex >= 0) {
-      allLogs[existingIndex].isCompleted = isCompleted;
+    if (existing.isNotEmpty) {
+      final updated = HabitLog(id: existing.first.id)
+        ..habitId = habitId
+        ..date = date
+        ..isCompleted = isCompleted;
+      await _write((isar) {
+        isar.habitLogs.put(updated);
+      });
     } else {
-      int nextId = 1;
-      if (allLogs.isNotEmpty) {
-        nextId = allLogs.map((l) => l.id ?? 0).reduce((a, b) => a > b ? a : b) + 1;
-      }
-      allLogs.add(HabitLog(id: nextId, habitId: habitId, date: date, isCompleted: isCompleted));
+      await _write((isar) {
+        isar.habitLogs.put(HabitLog(id: isar.habitLogs.autoIncrement())
+          ..habitId = habitId
+          ..date = date
+          ..isCompleted = isCompleted);
+      });
     }
-
-    await p.setStringList(keyHabitLogs, allLogs.map((e) => e.toJson()).toList());
   }
 
-  // --- Diary Entries CRUD ---
+  // ─────────────────────────── DIARY ENTRIES ───────────────────────────
+
   Future<List<DiaryEntry>> readAllDiaryEntries() async {
-    final p = await prefs;
-    final list = p.getStringList(keyDiaryEntries) ?? [];
-    List<DiaryEntry> entries = list.map((e) => DiaryEntry.fromJson(e)).toList();
-    entries.sort((a, b) => b.date.compareTo(a.date)); // Descending by date
+    final entries = _isar.diaryEntrys.where().findAll();
+    entries.sort((a, b) => b.date.compareTo(a.date));
     return entries;
   }
 
   Future<DiaryEntry> createDiaryEntry(DiaryEntry entry) async {
-    final p = await prefs;
-    final entries = await readAllDiaryEntries();
+    final newEntry = DiaryEntry(id: _isar.diaryEntrys.autoIncrement())
+      ..date = entry.date
+      ..dateLabel = entry.dateLabel
+      ..emoji = entry.emoji
+      ..emojiColorHex = entry.emojiColorHex
+      ..mood = entry.mood
+      ..body = entry.body;
 
-    int nextId = 1;
-    if (entries.isNotEmpty) {
-      nextId = entries.map((d) => d.id ?? 0).reduce((a, b) => a > b ? a : b) + 1;
-    }
-    entry.id = nextId;
-    entries.add(entry);
-
-    await p.setStringList(keyDiaryEntries, entries.map((e) => e.toJson()).toList());
-    return entry;
+    await _write((isar) {
+      isar.diaryEntrys.put(newEntry);
+    });
+    return newEntry;
   }
 }

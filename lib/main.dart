@@ -1,16 +1,34 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'screens/onboarding_screen.dart';
 
 import 'package:provider/provider.dart';
-import 'providers/app_provider.dart';
+import 'providers/habit_provider.dart';
+import 'providers/diary_provider.dart';
+import 'services/database_helper.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Isar database
+  String dbDir = '';
+  if (!kIsWeb) {
+    final dir = await getApplicationDocumentsDirectory();
+    dbDir = dir.path;
+  }
+  await DatabaseHelper.instance.init(dbDir);
+
+  // Initialize notification service (no-op on web)
+  await NotificationService.instance.init();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider(create: (_) => HabitProvider()),
+        ChangeNotifierProvider(create: (_) => DiaryProvider()),
       ],
       child: const DailybitApp(),
     ),
@@ -54,4 +72,4 @@ class DailybitApp extends StatelessWidget {
       home: const OnboardingScreen(),
     );
   }
-}
+}

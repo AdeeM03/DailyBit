@@ -1,16 +1,11 @@
-import 'dart:convert';
+import 'package:isar_plus/isar_plus.dart';
 
+part 'diary_entry.g.dart';
+
+@collection
 class DiaryEntry {
-  int? id;
-  String date; // ISO 'YYYY-MM-DD'
-  String dateLabel; // E.g., 'Monday, Oct 24'
-  String emoji;
-  int emojiColorHex;
-  String mood;
-  String body;
-
   DiaryEntry({
-    this.id,
+    required this.id,
     this.date = '',
     this.dateLabel = '',
     this.emoji = '',
@@ -19,30 +14,14 @@ class DiaryEntry {
     this.body = '',
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'date': date,
-      'dateLabel': dateLabel,
-      'emoji': emoji,
-      'emojiColorHex': emojiColorHex,
-      'mood': mood,
-      'body': body,
-    };
-  }
+  final int id;
 
-  factory DiaryEntry.fromMap(Map<String, dynamic> map) {
-    return DiaryEntry(
-      id: map['id'] as int?,
-      date: map['date'] as String,
-      dateLabel: map['dateLabel'] as String,
-      emoji: map['emoji'] as String,
-      emojiColorHex: map['emojiColorHex'] as int,
-      mood: map['mood'] as String,
-      body: map['body'] as String,
-    );
-  }
+  @Index()
+  late String date; // ISO 'YYYY-MM-DD'
 
-  String toJson() => json.encode(toMap());
-  factory DiaryEntry.fromJson(String source) => DiaryEntry.fromMap(json.decode(source));
+  late String dateLabel; // E.g., 'Monday, Oct 24'
+  late String emoji;
+  late int emojiColorHex;
+  late String mood;
+  late String body;
 }

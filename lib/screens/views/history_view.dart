@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
-import '../../providers/app_provider.dart';
+import '../../providers/habit_provider.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -25,7 +25,7 @@ class _HistoryViewState extends State<HistoryView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AppProvider>();
+    final provider = context.watch<HabitProvider>();
 
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF7CB342)));
