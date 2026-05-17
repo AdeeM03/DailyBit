@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "899681256715",
+    "project_id": "dailybit-867ad",
+    "storage_bucket": "dailybit-867ad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899681256715:android:e1d6151b6e0c5de8498e0e",
+        "android_client_info": {
+          "package_name": "com.example.dailybit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899681256715-ias4lan5iv2vpbc36tafqfi45dv51gcs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2nk6h9NNDWgpQq2CH3NOAWhElt3stwSc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899681256715-ias4lan5iv2vpbc36tafqfi45dv51gcs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

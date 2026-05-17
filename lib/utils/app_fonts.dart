@@ -42,7 +42,7 @@ class AppFonts {
   static TextStyle streak({
     double fontSize = 15,
     FontWeight fontWeight = FontWeight.w800,
-    Color color = const Color(0xFF558B2F),
+    Color color = const Color(0xFF58A700),
   }) =>
       GoogleFonts.fredoka(
         fontSize: fontSize,

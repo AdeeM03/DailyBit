@@ -1,0 +1,14 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- Diary / Book (Purple) -->
+  <!-- Shadow/Base -->
+  <rect x="8" y="10" width="24" height="22" rx="4" fill="#994DCD" />
+  <!-- Main -->
+  <rect x="8" y="8" width="24" height="22" rx="4" fill="#CE82FF" />
+  <!-- Spine -->
+  <rect x="18" y="8" width="4" height="22" fill="#BA65EF" />
+  <!-- Highlight -->
+  <path d="M 10 10 L 30 10 L 30 14 L 10 14 Z" fill="#FFFFFF" opacity="0.4" />
+  <!-- Pages/Bookmark -->
+  <rect x="12" y="8" width="4" height="12" fill="#FFC800" rx="1" />
+  <rect x="12" y="9" width="4" height="12" fill="#E5B400" rx="1" opacity="0.5" />
+</svg>

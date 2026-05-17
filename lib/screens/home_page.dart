@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import '../services/sync_service.dart';
 import 'views/home_view.dart';
 import 'views/diary_view.dart';
 import 'views/history_view.dart';
@@ -14,126 +15,70 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  final PersistentTabController _controller =
+      PersistentTabController(initialIndex: 0);
 
-  final List<Widget> _pages = [
-    const HomeView(),
-    const DiaryView(),
-    const HistoryView(),
-    const MeView(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    SyncService.instance.syncInBackground();
+  }
+
+  static const _activeColor = Color(0xFF58CC02); // Duolingo Green
+  static const _inactiveColor = Color(0xFFBDBDBD);
+
+  List<Widget> _buildScreens() => [
+        const HomeView(),
+        const DiaryView(),
+        const HistoryView(),
+        const MeView(),
+      ];
+
+  List<PersistentBottomNavBarItem> _navItems() => [
+        PersistentBottomNavBarItem(
+          icon: SvgPicture.asset('assets/icons/nav_habit_active.svg', width: 30, height: 30),
+          inactiveIcon: SvgPicture.asset('assets/icons/nav_habit_inactive.svg', width: 30, height: 30),
+          title: 'Habbit',
+          activeColorPrimary: _activeColor,
+          inactiveColorPrimary: _inactiveColor,
+        ),
+        PersistentBottomNavBarItem(
+          icon: SvgPicture.asset('assets/icons/nav_diary_active.svg', width: 30, height: 30),
+          inactiveIcon: SvgPicture.asset('assets/icons/nav_diary_inactive.svg', width: 30, height: 30),
+          title: 'Diary',
+          activeColorPrimary: _activeColor,
+          inactiveColorPrimary: _inactiveColor,
+        ),
+        PersistentBottomNavBarItem(
+          icon: SvgPicture.asset('assets/icons/nav_history_active.svg', width: 30, height: 30),
+          inactiveIcon: SvgPicture.asset('assets/icons/nav_history_inactive.svg', width: 30, height: 30),
+          title: 'History',
+          activeColorPrimary: _activeColor,
+          inactiveColorPrimary: _inactiveColor,
+        ),
+        PersistentBottomNavBarItem(
+          icon: SvgPicture.asset('assets/icons/nav_me_active.svg', width: 30, height: 30),
+          inactiveIcon: SvgPicture.asset('assets/icons/nav_me_inactive.svg', width: 30, height: 30),
+          title: 'Me',
+          activeColorPrimary: _activeColor,
+          inactiveColorPrimary: _inactiveColor,
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F5),
-      body: SafeArea(
-        bottom: false,
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  index: 0,
-                  icon: FontAwesomeIcons.circleCheck,
-                  activeIcon: FontAwesomeIcons.solidCircleCheck,
-                  label: 'TODAY',
-                  useBadge: true,
-                ),
-                _buildNavItem(
-                  index: 1,
-                  icon: FontAwesomeIcons.book,
-                  activeIcon: FontAwesomeIcons.bookOpen,
-                  label: 'DIARY',
-                  useBadge: true,
-                ),
-                _buildNavItem(
-                  index: 2,
-                  icon: FontAwesomeIcons.clockRotateLeft,
-                  activeIcon: FontAwesomeIcons.clockRotateLeft,
-                  label: 'HISTORY',
-                  useBadge: true,
-                ),
-                _buildNavItem(
-                  index: 3,
-                  icon: FontAwesomeIcons.user,
-                  activeIcon: FontAwesomeIcons.solidUser,
-                  label: 'ME',
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required int index,
-    required dynamic icon,
-    required dynamic activeIcon,
-    required String label,
-    bool useBadge = false,
-  }) {
-    final isSelected = _selectedIndex == index;
-    final color = isSelected ? const Color(0xFF7CB342) : Colors.grey.shade400;
-
-    return GestureDetector(
-      onTap: () => setState(() => _selectedIndex = index),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 70,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (useBadge && isSelected)
-              Container(
-                width: 44,
-                height: 44,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF7CB342),
-                  shape: BoxShape.circle,
-                ),
-                child: FaIcon(activeIcon, color: Colors.white, size: 24),
-              )
-            else
-              FaIcon(
-                isSelected ? activeIcon : icon,
-                color: color,
-                size: 24,
-              ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.fredoka(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: color,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return PersistentTabView(
+      context,
+      controller: _controller,
+      screens: _buildScreens(),
+      items: _navItems(),
+      backgroundColor: Colors.white,
+      navBarStyle: NavBarStyle.style13,
+      handleAndroidBackButtonPress: true,
+      resizeToAvoidBottomInset: true,
+      stateManagement: true,
+      hideNavigationBarWhenKeyboardAppears: true,
+      confineToSafeArea: true,
     );
   }
 }

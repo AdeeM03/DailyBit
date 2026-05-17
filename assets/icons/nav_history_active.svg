@@ -1,0 +1,13 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- History / Clock (Gold) -->
+  <!-- Shadow/Base -->
+  <circle cx="20" cy="22" r="15" fill="#E5B400" />
+  <!-- Main -->
+  <circle cx="20" cy="20" r="15" fill="#FFC800" />
+  <!-- Inner Face -->
+  <circle cx="20" cy="20" r="11" fill="#FFF2B2" />
+  <!-- Highlight -->
+  <path d="M 12 12 C 16 8, 24 8, 28 12 C 24 10, 16 10, 12 12 Z" fill="#FFFFFF" opacity="0.6" />
+  <!-- Hands -->
+  <polyline points="20 14 20 20 24 22" stroke="#E5B400" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+</svg>

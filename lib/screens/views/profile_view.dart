@@ -179,7 +179,7 @@ class ProfileView extends StatelessWidget {
                       ),
                       itemCount: 28,
                       itemBuilder: (context, index) {
-                        bool isActive = (index % 3 != 0); // Randomize active days for visual
+                        final bool isActive = (index % 3 != 0); // Randomize active days for visual
                         return Container(
                           decoration: BoxDecoration(
                             color: isActive ? const Color(0xFFD4EBE1) : const Color(0xFFF5F9F7),
@@ -195,9 +195,9 @@ class ProfileView extends StatelessWidget {
                       text: TextSpan(
                         style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                         children: const [
-                          TextSpan(text: "You've been active for "),
-                          TextSpan(text: "24 days", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2D3142))),
-                          TextSpan(text: " this month."),
+                          TextSpan(text: 'You\'ve been active for '),
+                          TextSpan(text: '24 days', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2D3142))),
+                          TextSpan(text: ' this month.'),
                         ],
                       ),
                     ),

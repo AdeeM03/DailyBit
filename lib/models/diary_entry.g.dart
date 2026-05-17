@@ -24,7 +24,8 @@ final DiaryEntrySchema = IsarGeneratedSchema(
       IsarPropertySchema(name: 'dateLabel', type: IsarType.string),
       IsarPropertySchema(name: 'emoji', type: IsarType.string),
       IsarPropertySchema(name: 'emojiColorHex', type: IsarType.long),
-      IsarPropertySchema(name: 'mood', type: IsarType.string),
+      IsarPropertySchema(name: 'moodLevel', type: IsarType.long),
+      IsarPropertySchema(name: 'title', type: IsarType.string),
       IsarPropertySchema(name: 'body', type: IsarType.string),
     ],
     indexes: [
@@ -50,8 +51,9 @@ int serializeDiaryEntry(IsarWriter writer, DiaryEntry object) {
   IsarCore.writeString(writer, 2, object.dateLabel);
   IsarCore.writeString(writer, 3, object.emoji);
   IsarCore.writeLong(writer, 4, object.emojiColorHex);
-  IsarCore.writeString(writer, 5, object.mood);
-  IsarCore.writeString(writer, 6, object.body);
+  IsarCore.writeLong(writer, 5, object.moodLevel);
+  IsarCore.writeString(writer, 6, object.title);
+  IsarCore.writeString(writer, 7, object.body);
   return object.id;
 }
 
@@ -74,17 +76,27 @@ DiaryEntry deserializeDiaryEntry(IsarReader reader) {
       _emojiColorHex = value;
     }
   }
-  final String _mood;
-  _mood = IsarCore.readString(reader, 5) ?? '';
+  final int _moodLevel;
+  {
+    final value = IsarCore.readLong(reader, 5);
+    if (value == -9223372036854775808) {
+      _moodLevel = 3;
+    } else {
+      _moodLevel = value;
+    }
+  }
+  final String _title;
+  _title = IsarCore.readString(reader, 6) ?? '';
   final String _body;
-  _body = IsarCore.readString(reader, 6) ?? '';
+  _body = IsarCore.readString(reader, 7) ?? '';
   final object = DiaryEntry(
     id: _id,
     date: _date,
     dateLabel: _dateLabel,
     emoji: _emoji,
     emojiColorHex: _emojiColorHex,
-    mood: _mood,
+    moodLevel: _moodLevel,
+    title: _title,
     body: _body,
   );
   return object;
@@ -111,9 +123,18 @@ dynamic deserializeDiaryEntryProp(IsarReader reader, int property) {
         }
       }
     case 5:
-      return IsarCore.readString(reader, 5) ?? '';
+      {
+        final value = IsarCore.readLong(reader, 5);
+        if (value == -9223372036854775808) {
+          return 3;
+        } else {
+          return value;
+        }
+      }
     case 6:
       return IsarCore.readString(reader, 6) ?? '';
+    case 7:
+      return IsarCore.readString(reader, 7) ?? '';
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -126,7 +147,8 @@ sealed class _DiaryEntryUpdate {
     String? dateLabel,
     String? emoji,
     int? emojiColorHex,
-    String? mood,
+    int? moodLevel,
+    String? title,
     String? body,
   });
 }
@@ -143,7 +165,8 @@ class _DiaryEntryUpdateImpl implements _DiaryEntryUpdate {
     Object? dateLabel = ignore,
     Object? emoji = ignore,
     Object? emojiColorHex = ignore,
-    Object? mood = ignore,
+    Object? moodLevel = ignore,
+    Object? title = ignore,
     Object? body = ignore,
   }) {
     return collection.updateProperties(
@@ -153,8 +176,9 @@ class _DiaryEntryUpdateImpl implements _DiaryEntryUpdate {
             if (dateLabel != ignore) 2: dateLabel as String?,
             if (emoji != ignore) 3: emoji as String?,
             if (emojiColorHex != ignore) 4: emojiColorHex as int?,
-            if (mood != ignore) 5: mood as String?,
-            if (body != ignore) 6: body as String?,
+            if (moodLevel != ignore) 5: moodLevel as int?,
+            if (title != ignore) 6: title as String?,
+            if (body != ignore) 7: body as String?,
           },
         ) >
         0;
@@ -168,7 +192,8 @@ sealed class _DiaryEntryUpdateAll {
     String? dateLabel,
     String? emoji,
     int? emojiColorHex,
-    String? mood,
+    int? moodLevel,
+    String? title,
     String? body,
   });
 }
@@ -185,7 +210,8 @@ class _DiaryEntryUpdateAllImpl implements _DiaryEntryUpdateAll {
     Object? dateLabel = ignore,
     Object? emoji = ignore,
     Object? emojiColorHex = ignore,
-    Object? mood = ignore,
+    Object? moodLevel = ignore,
+    Object? title = ignore,
     Object? body = ignore,
   }) {
     return collection.updateProperties(id, {
@@ -193,8 +219,9 @@ class _DiaryEntryUpdateAllImpl implements _DiaryEntryUpdateAll {
       if (dateLabel != ignore) 2: dateLabel as String?,
       if (emoji != ignore) 3: emoji as String?,
       if (emojiColorHex != ignore) 4: emojiColorHex as int?,
-      if (mood != ignore) 5: mood as String?,
-      if (body != ignore) 6: body as String?,
+      if (moodLevel != ignore) 5: moodLevel as int?,
+      if (title != ignore) 6: title as String?,
+      if (body != ignore) 7: body as String?,
     });
   }
 }
@@ -211,7 +238,8 @@ sealed class _DiaryEntryQueryUpdate {
     String? dateLabel,
     String? emoji,
     int? emojiColorHex,
-    String? mood,
+    int? moodLevel,
+    String? title,
     String? body,
   });
 }
@@ -228,7 +256,8 @@ class _DiaryEntryQueryUpdateImpl implements _DiaryEntryQueryUpdate {
     Object? dateLabel = ignore,
     Object? emoji = ignore,
     Object? emojiColorHex = ignore,
-    Object? mood = ignore,
+    Object? moodLevel = ignore,
+    Object? title = ignore,
     Object? body = ignore,
   }) {
     return query.updateProperties(limit: limit, {
@@ -236,8 +265,9 @@ class _DiaryEntryQueryUpdateImpl implements _DiaryEntryQueryUpdate {
       if (dateLabel != ignore) 2: dateLabel as String?,
       if (emoji != ignore) 3: emoji as String?,
       if (emojiColorHex != ignore) 4: emojiColorHex as int?,
-      if (mood != ignore) 5: mood as String?,
-      if (body != ignore) 6: body as String?,
+      if (moodLevel != ignore) 5: moodLevel as int?,
+      if (title != ignore) 6: title as String?,
+      if (body != ignore) 7: body as String?,
     });
   }
 }
@@ -261,7 +291,8 @@ class _DiaryEntryQueryBuilderUpdateImpl implements _DiaryEntryQueryUpdate {
     Object? dateLabel = ignore,
     Object? emoji = ignore,
     Object? emojiColorHex = ignore,
-    Object? mood = ignore,
+    Object? moodLevel = ignore,
+    Object? title = ignore,
     Object? body = ignore,
   }) {
     final q = query.build();
@@ -271,8 +302,9 @@ class _DiaryEntryQueryBuilderUpdateImpl implements _DiaryEntryQueryUpdate {
         if (dateLabel != ignore) 2: dateLabel as String?,
         if (emoji != ignore) 3: emoji as String?,
         if (emojiColorHex != ignore) 4: emojiColorHex as int?,
-        if (mood != ignore) 5: mood as String?,
-        if (body != ignore) 6: body as String?,
+        if (moodLevel != ignore) 5: moodLevel as int?,
+        if (title != ignore) 6: title as String?,
+        if (body != ignore) 7: body as String?,
       });
     } finally {
       q.close();
@@ -867,25 +899,81 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodEqualTo(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodLevelEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition>
+  moodLevelGreaterThan(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition>
+  moodLevelGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodLevelLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 5, value: value));
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition>
+  moodLevelLessThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 5, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodLevelBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 5, lower: lower, upper: upper),
+      );
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        EqualCondition(property: 5, value: value, caseSensitive: caseSensitive),
+        EqualCondition(property: 6, value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodGreaterThan(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleGreaterThan(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 5,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -894,11 +982,11 @@ extension DiaryEntryQueryFilter
   }
 
   QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition>
-  moodGreaterThanOrEqualTo(String value, {bool caseSensitive = true}) {
+  titleGreaterThanOrEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 5,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -906,23 +994,23 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodLessThan(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleLessThan(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        LessCondition(property: 5, value: value, caseSensitive: caseSensitive),
+        LessCondition(property: 6, value: value, caseSensitive: caseSensitive),
       );
     });
   }
 
   QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition>
-  moodLessThanOrEqualTo(String value, {bool caseSensitive = true}) {
+  titleLessThanOrEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 5,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -930,7 +1018,7 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodBetween(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleBetween(
     String lower,
     String upper, {
     bool caseSensitive = true,
@@ -938,7 +1026,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 5,
+          property: 6,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -947,14 +1035,14 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodStartsWith(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 5,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -962,14 +1050,14 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodEndsWith(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 5,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -977,14 +1065,14 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodContains(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleContains(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 5,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -992,14 +1080,14 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodMatches(
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleMatches(
     String pattern, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 5,
+          property: 6,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1007,18 +1095,19 @@ extension DiaryEntryQueryFilter
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodIsEmpty() {
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> titleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const EqualCondition(property: 5, value: ''),
+        const EqualCondition(property: 6, value: ''),
       );
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> moodIsNotEmpty() {
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition>
+  titleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterCondition(property: 5, value: ''),
+        const GreaterCondition(property: 6, value: ''),
       );
     });
   }
@@ -1029,7 +1118,7 @@ extension DiaryEntryQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        EqualCondition(property: 6, value: value, caseSensitive: caseSensitive),
+        EqualCondition(property: 7, value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1041,7 +1130,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 6,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1054,7 +1143,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 6,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1068,7 +1157,7 @@ extension DiaryEntryQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        LessCondition(property: 6, value: value, caseSensitive: caseSensitive),
+        LessCondition(property: 7, value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1078,7 +1167,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 6,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1094,7 +1183,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 6,
+          property: 7,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1110,7 +1199,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 6,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1125,7 +1214,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 6,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1140,7 +1229,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 6,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1155,7 +1244,7 @@ extension DiaryEntryQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 6,
+          property: 7,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1166,7 +1255,7 @@ extension DiaryEntryQueryFilter
   QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> bodyIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const EqualCondition(property: 6, value: ''),
+        const EqualCondition(property: 7, value: ''),
       );
     });
   }
@@ -1174,7 +1263,7 @@ extension DiaryEntryQueryFilter
   QueryBuilder<DiaryEntry, DiaryEntry, QAfterFilterCondition> bodyIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterCondition(property: 6, value: ''),
+        const GreaterCondition(property: 7, value: ''),
       );
     });
   }
@@ -1257,23 +1346,19 @@ extension DiaryEntryQuerySortBy
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByMood({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByMoodLevel() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5, caseSensitive: caseSensitive);
+      return query.addSortBy(5);
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByMoodDesc({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByMoodLevelDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(5, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByBody({
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByTitle({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1281,11 +1366,27 @@ extension DiaryEntryQuerySortBy
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByBodyDesc({
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByTitleDesc({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByBody({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> sortByBodyDesc({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 }
@@ -1364,23 +1465,19 @@ extension DiaryEntryQuerySortThenBy
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByMood({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByMoodLevel() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5, caseSensitive: caseSensitive);
+      return query.addSortBy(5);
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByMoodDesc({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByMoodLevelDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(5, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByBody({
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByTitle({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1388,11 +1485,27 @@ extension DiaryEntryQuerySortThenBy
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByBodyDesc({
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByTitleDesc({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByBody({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterSortBy> thenByBodyDesc({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 }
@@ -1430,11 +1543,17 @@ extension DiaryEntryQueryWhereDistinct
     });
   }
 
-  QueryBuilder<DiaryEntry, DiaryEntry, QAfterDistinct> distinctByMood({
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterDistinct> distinctByMoodLevel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(5);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, DiaryEntry, QAfterDistinct> distinctByTitle({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(5, caseSensitive: caseSensitive);
+      return query.addDistinctBy(6, caseSensitive: caseSensitive);
     });
   }
 
@@ -1442,7 +1561,7 @@ extension DiaryEntryQueryWhereDistinct
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(6, caseSensitive: caseSensitive);
+      return query.addDistinctBy(7, caseSensitive: caseSensitive);
     });
   }
 }
@@ -1479,15 +1598,21 @@ extension DiaryEntryQueryProperty1
     });
   }
 
-  QueryBuilder<DiaryEntry, String, QAfterProperty> moodProperty() {
+  QueryBuilder<DiaryEntry, int, QAfterProperty> moodLevelProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<DiaryEntry, String, QAfterProperty> bodyProperty() {
+  QueryBuilder<DiaryEntry, String, QAfterProperty> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, String, QAfterProperty> bodyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
     });
   }
 }
@@ -1524,15 +1649,21 @@ extension DiaryEntryQueryProperty2<R>
     });
   }
 
-  QueryBuilder<DiaryEntry, (R, String), QAfterProperty> moodProperty() {
+  QueryBuilder<DiaryEntry, (R, int), QAfterProperty> moodLevelProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<DiaryEntry, (R, String), QAfterProperty> bodyProperty() {
+  QueryBuilder<DiaryEntry, (R, String), QAfterProperty> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, (R, String), QAfterProperty> bodyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
     });
   }
 }
@@ -1569,15 +1700,21 @@ extension DiaryEntryQueryProperty3<R1, R2>
     });
   }
 
-  QueryBuilder<DiaryEntry, (R1, R2, String), QOperations> moodProperty() {
+  QueryBuilder<DiaryEntry, (R1, R2, int), QOperations> moodLevelProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<DiaryEntry, (R1, R2, String), QOperations> bodyProperty() {
+  QueryBuilder<DiaryEntry, (R1, R2, String), QOperations> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<DiaryEntry, (R1, R2, String), QOperations> bodyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
     });
   }
 }

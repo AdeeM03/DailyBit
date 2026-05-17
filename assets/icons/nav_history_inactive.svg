@@ -1,0 +1,5 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- History Inactive (Grey) -->
+  <circle cx="20" cy="20" r="14" fill="none" stroke="#BDBDBD" stroke-width="3" />
+  <polyline points="20 14 20 20 24 22" stroke="#BDBDBD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+</svg>

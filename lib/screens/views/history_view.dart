@@ -1,10 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:chiclet/chiclet.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
+import 'package:cupertino_calendar_picker/cupertino_calendar_picker.dart';
 import '../../providers/habit_provider.dart';
+import '../../models/habit.dart';
+import '../../widgets/chiclet_habit_card.dart';
+
+// ─────────────────────────────────────────────────────────
+//  ACHIEVEMENT DATA MODEL
+// ─────────────────────────────────────────────────────────
+
+class _Achievement {
+  final String title;
+  final String description;
+  final String emoji;
+  final int level;
+  final bool claimed;
+  final double progress; // 0.0 - 1.0
+  final String? progressLabel;
+
+  const _Achievement({
+    required this.title,
+    required this.description,
+    required this.emoji,
+    required this.level,
+    required this.claimed,
+    required this.progress,
+    this.progressLabel,
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+//  HISTORY VIEW
+// ─────────────────────────────────────────────────────────
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -13,740 +43,827 @@ class HistoryView extends StatefulWidget {
   State<HistoryView> createState() => _HistoryViewState();
 }
 
-class _HistoryViewState extends State<HistoryView> {
-  // Current month for calendar
+class _HistoryViewState extends State<HistoryView>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  // Calendar state
   int _currentMonth = DateTime.now().month;
   int _currentYear = DateTime.now().year;
   final int _today = DateTime.now().day;
 
-  // Weekly intensity data (0.0 - 1.0) - kept dummy for now as it's complex to aggregate
-  final List<double> _weeklyIntensity = [0.6, 0.75, 0.9, 0.7, 0.5, 0.3, 0.4];
-  final List<String> _dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // ─── ACHIEVEMENTS DATA ───
+  List<_Achievement> _buildAchievements(HabitProvider provider) {
+    final streak = provider.currentStreak;
+    final finished = provider.totalHabitsFinished;
+    final habitsCount = provider.habits.length;
+
+    return [
+      _Achievement(
+        title: 'Wildfire',
+        description: 'Reach a 30 day streak',
+        emoji: '🔥',
+        level: 4,
+        claimed: streak >= 30,
+        progress: (streak / 30).clamp(0.0, 1.0),
+        progressLabel: '$streak / 30',
+      ),
+      _Achievement(
+        title: 'Early Bird',
+        description: 'Complete 5 morning habits',
+        emoji: '🌅',
+        level: 1,
+        claimed: false,
+        progress: (finished / 5).clamp(0.0, 1.0),
+        progressLabel: '$finished / 5',
+      ),
+      _Achievement(
+        title: 'Scholar',
+        description: 'Log habits for 10 days total',
+        emoji: '📚',
+        level: 2,
+        claimed: finished >= 10,
+        progress: (finished / 10).clamp(0.0, 1.0),
+        progressLabel: '$finished / 10',
+      ),
+      _Achievement(
+        title: 'Legendary',
+        description: 'Unlock 50 habits',
+        emoji: '🏆',
+        level: 5,
+        claimed: false,
+        progress: (habitsCount / 50).clamp(0.0, 1.0),
+        progressLabel: '$habitsCount / 50',
+      ),
+    ];
+  }
+
+  // ─────────────────────────────────────────────────────────
+  //  BUILD
+  // ─────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<HabitProvider>();
 
     if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF7CB342)));
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF58CC02)),
+      );
     }
 
-    final completedDays = provider.getCompletedDaysInMonth(_currentYear, _currentMonth);
+    return Column(
+      children: [
+        // ─── TAB BAR ───
+        _buildTabBar(),
+        // ─── TAB CONTENT ───
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _CalendarTab(
+                provider: provider,
+                currentMonth: _currentMonth,
+                currentYear: _currentYear,
+                today: _today,
+                onPrevMonth: () => setState(() {
+                  if (_currentMonth > 1) {
+                    _currentMonth--;
+                  } else {
+                    _currentMonth = 12;
+                    _currentYear--;
+                  }
+                }),
+                onNextMonth: () => setState(() {
+                  if (_currentMonth < 12) {
+                    _currentMonth++;
+                  } else {
+                    _currentMonth = 1;
+                    _currentYear++;
+                  }
+                }),
+              ),
+              _AllHabitsTab(provider: provider),
+              _AchievementsTab(achievements: _buildAchievements(provider)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: TabBar(
+        controller: _tabController,
+        labelColor: const Color(0xFF58A700),
+        unselectedLabelColor: Colors.grey.shade500,
+        indicatorColor: const Color(0xFF58CC02),
+        indicatorWeight: 3,
+        labelStyle: GoogleFonts.nunito(
+          fontWeight: FontWeight.w800,
+          fontSize: 13,
+        ),
+        unselectedLabelStyle: GoogleFonts.nunito(
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+        tabs: const [
+          Tab(text: 'Calendar'),
+          Tab(text: 'All Habits'),
+          Tab(text: 'Achievements'),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  TAB 1: CALENDAR
+// ─────────────────────────────────────────────────────────
+
+class _CalendarTab extends StatefulWidget {
+  final HabitProvider provider;
+  final int currentMonth;
+  final int currentYear;
+  final int today;
+  final VoidCallback onPrevMonth;
+  final VoidCallback onNextMonth;
+
+  const _CalendarTab({
+    required this.provider,
+    required this.currentMonth,
+    required this.currentYear,
+    required this.today,
+    required this.onPrevMonth,
+    required this.onNextMonth,
+  });
+
+  @override
+  State<_CalendarTab> createState() => _CalendarTabState();
+}
+
+class _CalendarTabState extends State<_CalendarTab> {
+  DateTime? _selectedPickerDate;
+
+  List<Habit> _habitsCompletedOn(DateTime date) {
+    final dateStr = DateFormat('yyyy-MM-dd').format(date);
+    return widget.provider.habits.where((h) {
+      return widget.provider.allCompletedLogs.any(
+        (log) => log.habitId == h.id && log.date == dateStr && log.isCompleted,
+      );
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final streak = widget.provider.currentStreak;
+    final finished = widget.provider.totalHabitsFinished;
+
+    final now = DateTime.now();
+    final pickedHabits = _selectedPickerDate != null
+        ? _habitsCompletedOn(_selectedPickerDate!)
+        : <Habit>[];
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-            // ─── Header ───
-            _buildHeader(provider.currentStreak),
-            const SizedBox(height: 24),
-
-            // ─── Stats Cards ───
-            _buildStatsRow(provider.currentStreak, provider.totalHabitsFinished),
-            const SizedBox(height: 12),
-            _buildCompletionCard(provider.completionRate),
-            const SizedBox(height: 28),
-
-            // ─── Calendar Section ───
-            _buildCalendarHeader(),
-            const SizedBox(height: 20),
-            _buildCalendarGrid(completedDays),
-            const SizedBox(height: 32),
-
-            // ─── Weekly Intensity ───
-            _buildWeeklyIntensitySection(),
-            const SizedBox(height: 28),
-
-            // ─── Motivation Card ───
-            _buildMotivationCard(),
-            const SizedBox(height: 100),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ────────────────────────────────────────
-  //  HEADER: Back arrow + title + streak
-  // ────────────────────────────────────────
-  Widget _buildHeader(int streak) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: () {},
-              child: const FaIcon(FontAwesomeIcons.chevronLeft,
-                  color: Color(0xFF2D3142), size: 20),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Habit History',
-              style: TextStyle(
-                fontFamily: 'Fredoka',
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF2D3142),
-              ),
-            ),
-          ],
-        ),
-        // Streak badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFC8E6C9), width: 1),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const FaIcon(FontAwesomeIcons.fire, color: Colors.orange, size: 16),
-              const SizedBox(width: 4),
-              Text(
-                '$streak',
-                style: GoogleFonts.fredoka(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF558B2F),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ────────────────────────────────────────
-  //  STATS CARDS ROW
-  // ────────────────────────────────────────
-  Widget _buildStatsRow(int streak, int finished) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            icon: FontAwesomeIcons.fireFlameCurved,
-            iconColor: const Color(0xFF7CB342),
-            iconBgColor: const Color(0xFFE8F5E9),
-            label: 'ACTIVE',
-            value: '$streak',
-            subtitle: 'Current Streak',
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: FontAwesomeIcons.solidCircleCheck,
-            iconColor: const Color(0xFF7CB342),
-            iconBgColor: const Color(0xFFE8F5E9),
-            value: '$finished',
-            subtitle: 'Habits Finished',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required dynamic icon,
-    required Color iconColor,
-    required Color iconBgColor,
-    String? label,
-    required String value,
-    required String subtitle,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  borderRadius: BorderRadius.circular(10),
+          const SizedBox(height: 16),
+          // ─── STATS ROW ───
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    topLabel: 'CURRENT STREAK',
+                    value: '$streak',
+                    unit: 'Days',
+                    icon: Icons.local_fire_department_rounded,
+                    iconColor: const Color.fromARGB(255, 226, 52, 9),
+                    faded: false,
+                  ),
                 ),
-                child: Center(child: FaIcon(icon, color: iconColor, size: 18)),
-              ),
-              if (label != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade500,
-                    letterSpacing: 1,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatCard(
+                    topLabel: 'HABITS FINISHED',
+                    value: '$finished',
+                    unit: 'Habits',
+                    icon: Icons.check_circle_rounded,
+                    iconColor: const Color.fromARGB(255, 71, 119, 33),
+                    faded: true,
                   ),
                 ),
               ],
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: GoogleFonts.fredoka(
-              fontSize: 36,
-              fontWeight: FontWeight.w900,
-              color: const Color(0xFF2D3142),
-              height: 1,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: GoogleFonts.nunito(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade500,
+          ).animate().fade(duration: 350.ms).slideY(begin: 0.1),
+          const SizedBox(height: 16),
+
+          // ─── EMBEDDED CUPERTINO CALENDAR ───
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-          ),
+            child: CupertinoCalendar(
+              minimumDateTime: DateTime(now.year - 2),
+              maximumDateTime: now,
+              initialDateTime: _selectedPickerDate ?? now,
+              currentDateTime: now,
+              mode: CupertinoCalendarMode.date,
+              onDateTimeChanged: (date) {
+                setState(() => _selectedPickerDate = date);
+              },
+            ),
+          ).animate().fade(duration: 350.ms, delay: 50.ms).slideY(begin: 0.1),
+          const SizedBox(height: 16),
+
+          // ─── PICKED DATE COMPLETED HABITS ───
+          if (_selectedPickerDate != null) ...[
+            Text(
+              pickedHabits.isEmpty
+                  ? 'No habits completed on ${DateFormat('MMM d').format(_selectedPickerDate!)}'
+                  : 'Completed on ${DateFormat('MMM d, yyyy').format(_selectedPickerDate!)}',
+              style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade500,
+                letterSpacing: 0.5,
+              ),
+            ).animate().fade(duration: 250.ms),
+            const SizedBox(height: 12),
+            ...pickedHabits.map(
+              (h) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ChicletHabitCard(habit: h, provider: widget.provider, isFuture: true),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          const SizedBox(height: 100),
         ],
       ),
     );
   }
+}
 
-  // ────────────────────────────────────────
-  //  COMPLETION RATE CARD
-  // ────────────────────────────────────────
-  Widget _buildCompletionCard(double rate) {
-    int percentage = (rate * 100).toInt();
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE3F2FD),
-              borderRadius: BorderRadius.circular(10),
+// ─────────────────────────────────────────────────────────
+//  TAB 2: ALL HABITS
+// ─────────────────────────────────────────────────────────
+
+class _AllHabitsTab extends StatelessWidget {
+  final HabitProvider provider;
+
+  const _AllHabitsTab({required this.provider});
+
+  // Assign a time-of-day category based on index (demo)
+  static const _categories = ['ANYTIME', 'MORNING', 'AFTERNOON', 'EVENING'];
+
+  @override
+  Widget build(BuildContext context) {
+    final habits = provider.habits;
+
+    if (habits.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.checklist_rounded,
+              size: 64,
+              color: Color(0xFFCCCCCC),
             ),
-            child: const Center(
-              child: FaIcon(FontAwesomeIcons.chartSimple,
-                  color: Color(0xFF42A5F5), size: 18),
+            const SizedBox(height: 16),
+            Text(
+              'No habits yet',
+              style: GoogleFonts.fredoka(
+                fontSize: 18,
+                color: Colors.grey.shade500,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Column(
+            const SizedBox(height: 8),
+            Text(
+              'Add habits from the Today tab',
+              style: GoogleFonts.nunito(
+                fontSize: 13,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Group habits into categories (simple round-robin demo)
+    final grouped = <String, List<Habit>>{};
+    for (final cat in _categories) {
+      grouped[cat] = [];
+    }
+    for (int i = 0; i < habits.length; i++) {
+      final cat = _categories[i % _categories.length];
+      grouped[cat]!.add(habits[i]);
+    }
+
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '$percentage%',
-                style: GoogleFonts.fredoka(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFF2D3142),
-                  height: 1,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Completion Rate',
-                style: GoogleFonts.nunito(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade500,
-                ),
-              ),
+              const SizedBox(height: 16),
+              ...grouped.entries.expand((e) {
+                if (e.value.isEmpty) return <Widget>[];
+                return [
+                  // Category label
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10, top: 4),
+                    child: Text(
+                      e.key,
+                      style: GoogleFonts.nunito(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.grey.shade500,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  ...e.value.map(
+                    (habit) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: ChicletHabitCard(habit: habit, provider: provider, isFuture: true),
+                    ),
+                  ),
+                ];
+              }),
+              const SizedBox(height: 100),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ────────────────────────────────────────
-  //  CALENDAR HEADER (Month + arrows)
-  // ────────────────────────────────────────
-  Widget _buildCalendarHeader() {
-    final months = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${months[_currentMonth]} $_currentYear',
-                  style: GoogleFonts.fredoka(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF2D3142),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Consistent growth this month',
-                  style: GoogleFonts.nunito(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                _buildArrowButton(FontAwesomeIcons.chevronLeft, () {
-                  setState(() {
-                    if (_currentMonth > 1) {
-                      _currentMonth--;
-                    } else {
-                      _currentMonth = 12;
-                      _currentYear--;
-                    }
-                  });
-                }),
-                const SizedBox(width: 8),
-                _buildArrowButton(FontAwesomeIcons.chevronRight, () {
-                  setState(() {
-                    if (_currentMonth < 12) {
-                      _currentMonth++;
-                    } else {
-                      _currentMonth = 1;
-                      _currentYear++;
-                    }
-                  });
-                }),
-              ],
-            ),
-          ],
+          ).animate().fade(duration: 350.ms).slideY(begin: 0.05),
         ),
       ],
     );
   }
+}
 
-  Widget _buildArrowButton(dynamic icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200, width: 1.5),
-        ),
-        child: Center(child: FaIcon(icon, color: Colors.grey.shade600, size: 16)),
+// ─────────────────────────────────────────────────────────
+//  TAB 3: ACHIEVEMENTS
+// ─────────────────────────────────────────────────────────
+
+class _AchievementsTab extends StatelessWidget {
+  final List<_Achievement> achievements;
+
+  const _AchievementsTab({required this.achievements});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = achievements.length;
+    final done = achievements.where((a) => a.claimed).length;
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          // Hero progress card
+          _AchievementHeroCard(
+            done: done,
+            total: total,
+          ).animate().fade(duration: 350.ms).slideY(begin: 0.1),
+          const SizedBox(height: 20),
+          // Achievement grid
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: achievements.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 0.75,
+            ),
+            itemBuilder: (context, i) => _AchievementCard(a: achievements[i])
+                .animate(delay: (50 * i).ms)
+                .fade(duration: 350.ms)
+                .slideY(begin: 0.1),
+          ),
+          const SizedBox(height: 100),
+        ],
       ),
     );
   }
+}
 
-  // ────────────────────────────────────────
-  //  CALENDAR GRID
-  // ────────────────────────────────────────
-  Widget _buildCalendarGrid(Set<int> completedDays) {
-    // Day headers
-    final dayHeaders = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+// ─────────────────────────────────────────────────────────
+//  SHARED WIDGETS
+// ─────────────────────────────────────────────────────────
 
-    // Calculate first day of month and days in month
-    final firstDay = DateTime(_currentYear, _currentMonth, 1);
-    final daysInMonth = DateTime(_currentYear, _currentMonth + 1, 0).day;
-    // Monday = 1, so offset = weekday - 1
-    final startWeekday = firstDay.weekday - 1;
+class _StatCard extends StatelessWidget {
+  final String topLabel;
+  final String value;
+  final String? unit;
+  final IconData icon;
+  final Color iconColor;
+  final bool faded;
 
-    // Previous month days for fill
-    final prevMonthDays = DateTime(_currentYear, _currentMonth, 0).day;
+  const _StatCard({
+    required this.topLabel,
+    required this.value,
+    this.unit,
+    required this.icon,
+    required this.iconColor,
+    required this.faded,
+  });
 
-    List<Widget> dayWidgets = [];
-
-    // Previous month trailing days
-    for (int i = startWeekday - 1; i >= 0; i--) {
-      dayWidgets.add(_buildCalendarDay(
-        prevMonthDays - i,
-        isCurrentMonth: false,
-        isCompleted: false,
-        isToday: false,
-      ));
-    }
-
-    // Current month days
-    final now = DateTime.now();
-    for (int day = 1; day <= daysInMonth; day++) {
-      final isToday = _currentYear == now.year && _currentMonth == now.month && day == _today;
-      dayWidgets.add(_buildCalendarDay(
-        day,
-        isCurrentMonth: true,
-        isCompleted: completedDays.contains(day),
-        isToday: isToday,
-      ));
-    }
-
-    // Next month fill
-    final remaining = 7 - (dayWidgets.length % 7);
-    if (remaining < 7) {
-      for (int i = 1; i <= remaining; i++) {
-        dayWidgets.add(_buildCalendarDay(
-          i,
-          isCurrentMonth: false,
-          isCompleted: false,
-          isToday: false,
-        ));
-      }
-    }
-
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Day headers
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: dayHeaders.map((d) => SizedBox(
-              width: 36,
-              child: Text(
-                d,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            )).toList(),
-          ),
-          const SizedBox(height: 12),
-          // Calendar rows
-          ...List.generate(
-            (dayWidgets.length / 7).ceil(),
-            (rowIndex) {
-              final start = rowIndex * 7;
-              final end = math.min(start + 7, dayWidgets.length);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: dayWidgets.sublist(start, end),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalendarDay(
-    int day, {
-    required bool isCurrentMonth,
-    required bool isCompleted,
-    required bool isToday,
-  }) {
-    Color bgColor;
-    Color textColor;
-
-    if (!isCurrentMonth) {
-      bgColor = Colors.transparent;
-      textColor = Colors.grey.shade300;
-    } else if (isToday) {
-      bgColor = const Color(0xFF558B2F);
-      textColor = Colors.white;
-    } else if (isCompleted) {
-      bgColor = const Color(0xFF7CB342);
-      textColor = Colors.white;
-    } else {
-      bgColor = Colors.transparent;
-      textColor = Colors.grey.shade600;
-    }
-
-    return SizedBox(
-      width: 36,
-      height: 36,
-      child: Container(
-        decoration: BoxDecoration(
-          color: bgColor,
-          shape: BoxShape.circle,
-          border: isToday
-              ? Border.all(color: const Color(0xFF33691E), width: 2.5)
-              : null,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          '$day',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight:
-                (isCompleted || isToday) ? FontWeight.w800 : FontWeight.w600,
-            color: textColor,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ────────────────────────────────────────
-  //  WEEKLY INTENSITY
-  // ────────────────────────────────────────
-  Widget _buildWeeklyIntensitySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Weekly Intensity',
-          style: TextStyle(
-            fontFamily: 'Fredoka',
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF2D3142),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Bar chart
-              SizedBox(
-                height: 140,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: List.generate(7, (index) {
-                    return _buildIntensityBar(
-                      index,
-                      _weeklyIntensity[index],
-                      isHighlighted: index == 2, // Wednesday
-                    );
-                  }),
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Day labels
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(7, (index) {
-                  final isHighlighted = index == 2;
-                  return SizedBox(
-                    width: 36,
-                    child: Text(
-                      _dayLabels[index],
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.nunito(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: isHighlighted
-                          ? const Color(0xFF7CB342)
-                          : Colors.grey.shade500,
-                      letterSpacing: 0.3,
-                    ),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildIntensityBar(int index, double intensity,
-      {bool isHighlighted = false}) {
-    final maxHeight = 110.0;
-    final barHeight = maxHeight * intensity;
-    final restHeight = maxHeight - barHeight;
-
-    return SizedBox(
-      width: 24,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          // Inactive top portion
-          if (restHeight > 0)
-            Container(
-              width: 24,
-              height: restHeight,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-              ),
-            ),
-          // Active bottom portion
-          Container(
-            width: 24,
-            height: barHeight,
-            decoration: BoxDecoration(
-              color: isHighlighted
-                  ? const Color(0xFF7CB342)
-                  : const Color(0xFFA5D6A7),
-              borderRadius: BorderRadius.vertical(
-                top: restHeight > 0
-                    ? Radius.zero
-                    : const Radius.circular(12),
-                bottom: const Radius.circular(12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ────────────────────────────────────────
-  //  MOTIVATION CARD (green gradient)
-  // ────────────────────────────────────────
-  Widget _buildMotivationCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF7CB342),
-            Color(0xFF558B2F),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF7CB342).withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Stack(
         children: [
-          // Decorative elements
-          Positioned(
-            top: -10,
-            right: -10,
-            child: Text(
-              '✨',
-              style: TextStyle(
-                fontSize: 40,
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
+          // Faded background icon
+          if (faded)
+            Positioned(
+              bottom: -8,
+              right: -8,
+              child: Icon(icon, size: 72, color: Colors.grey.shade100),
             ),
-          ),
-          Positioned(
-            bottom: 10,
-            right: 20,
-            child: Text(
-              '⭐',
-              style: TextStyle(
-                fontSize: 30,
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Your morning\nroutine is paying\noff.',
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  height: 1.25,
-                ),
-              ),
-              const SizedBox(height: 14),
               Text(
-                'Completing habits before 9 AM has increased your focus by 40% this month.',
+                topLabel,
                 style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.85),
-                  height: 1.5,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.grey.shade500,
+                  letterSpacing: 0.8,
                 ),
               ),
-              const SizedBox(height: 20),
-              ChicletOutlinedAnimatedButton(
-                onPressed: () {},
-                height: 44,
-                buttonHeight: 3,
-                borderRadius: 12,
-                borderColor: Colors.white,
-                buttonColor: Colors.white.withValues(alpha: 0.3),
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                borderWidth: 1.5,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'READ ANALYSIS',
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(icon, color: iconColor, size: 22),
+                  const SizedBox(width: 6),
+                  Text(
+                    value,
                     style: GoogleFonts.fredoka(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 1,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      height: 1.15,
                     ),
                   ),
-                ),
+                ],
               ),
+              if (unit != null) ...[
+                Text(
+                  unit!,
+                  style: GoogleFonts.fredoka(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── CALENDAR CARD ───
+
+
+
+
+
+
+// ─── ACHIEVEMENT HERO CARD ───
+
+class _AchievementHeroCard extends StatelessWidget {
+  final int done;
+  final int total;
+  const _AchievementHeroCard({required this.done, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = total > 0 ? done / total : 0.0;
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE8F5E9), Color(0xFFDCEDC8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My Achievements',
+                  style: GoogleFonts.fredoka(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'TOTAL PROGRESS',
+                  style: GoogleFonts.nunito(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.grey.shade600,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  '$done / $total',
+                  style: GoogleFonts.fredoka(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF58A700),
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: pct,
+                    backgroundColor: Colors.grey.shade300,
+                    valueColor: const AlwaysStoppedAnimation(Color(0xFF58CC02)),
+                    minHeight: 8,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  pct >= 0.5
+                      ? "You're halfway to becoming a Master Habit Binder!"
+                      : 'Keep going — every habit counts!',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 58,
+            height: 58,
+            decoration: const BoxDecoration(
+              color: Color(0xFF58CC02),
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: Icon(Icons.star_rounded, color: Colors.white, size: 32),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── ACHIEVEMENT CARD ───
+
+class _AchievementCard extends StatelessWidget {
+  final _Achievement a;
+  const _AchievementCard({required this.a});
+
+  @override
+  Widget build(BuildContext context) {
+    final locked = !a.claimed && (a.progress == 0.0);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Badge area
+            Stack(
+              alignment: Alignment.bottomLeft,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: locked
+                        ? Colors.grey.shade200
+                        : const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: locked
+                        ? Icon(
+                            Icons.lock_outline,
+                            size: 40,
+                            color: Colors.grey.shade400,
+                          )
+                        : Text(a.emoji, style: const TextStyle(fontSize: 44)),
+                  ),
+                ),
+                // Level badge
+                if (!locked)
+                  Container(
+                    margin: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'LVL ${a.level}',
+                      style: GoogleFonts.nunito(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              a.title,
+              style: GoogleFonts.fredoka(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: locked ? Colors.grey.shade400 : Theme.of(context).colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            Text(
+              a.description,
+              style: GoogleFonts.nunito(
+                fontSize: 10,
+                color: Colors.grey.shade500,
+                height: 1.3,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const Spacer(),
+            // Progress bar (locked) or button (claimed/in-progress)
+            if (locked && a.progressLabel != null) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: a.progress,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor: const AlwaysStoppedAnimation(Color(0xFF42A5F5)),
+                  minHeight: 5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                a.progressLabel!,
+                style: GoogleFonts.nunito(
+                  fontSize: 10,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ] else if (a.claimed)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF58CC02),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'CLAIMED',
+                    style: GoogleFonts.nunito(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              )
+            else
+              SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'IN PROGRESS',
+                        style: GoogleFonts.nunito(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                    if (a.progressLabel != null) ...[
+                      const SizedBox(height: 3),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: a.progress,
+                          backgroundColor: Colors.grey.shade200,
+                          valueColor: const AlwaysStoppedAnimation(
+                            Color(0xFF42A5F5),
+                          ),
+                          minHeight: 4,
+                        ),
+                      ),
+                      Text(
+                        a.progressLabel!,
+                        style: GoogleFonts.nunito(
+                          fontSize: 9,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

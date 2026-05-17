@@ -23,6 +23,7 @@ final HabitLogSchema = IsarGeneratedSchema(
       IsarPropertySchema(name: 'habitId', type: IsarType.long),
       IsarPropertySchema(name: 'date', type: IsarType.string),
       IsarPropertySchema(name: 'isCompleted', type: IsarType.bool),
+      IsarPropertySchema(name: 'progress', type: IsarType.long),
     ],
     indexes: [
       IsarIndexSchema(
@@ -52,6 +53,7 @@ int serializeHabitLog(IsarWriter writer, HabitLog object) {
   IsarCore.writeLong(writer, 1, object.habitId);
   IsarCore.writeString(writer, 2, object.date);
   IsarCore.writeBool(writer, 3, value: object.isCompleted);
+  IsarCore.writeLong(writer, 4, object.progress);
   return object.id;
 }
 
@@ -72,11 +74,21 @@ HabitLog deserializeHabitLog(IsarReader reader) {
   _date = IsarCore.readString(reader, 2) ?? '';
   final bool _isCompleted;
   _isCompleted = IsarCore.readBool(reader, 3);
+  final int _progress;
+  {
+    final value = IsarCore.readLong(reader, 4);
+    if (value == -9223372036854775808) {
+      _progress = 0;
+    } else {
+      _progress = value;
+    }
+  }
   final object = HabitLog(
     id: _id,
     habitId: _habitId,
     date: _date,
     isCompleted: _isCompleted,
+    progress: _progress,
   );
   return object;
 }
@@ -99,13 +111,28 @@ dynamic deserializeHabitLogProp(IsarReader reader, int property) {
       return IsarCore.readString(reader, 2) ?? '';
     case 3:
       return IsarCore.readBool(reader, 3);
+    case 4:
+      {
+        final value = IsarCore.readLong(reader, 4);
+        if (value == -9223372036854775808) {
+          return 0;
+        } else {
+          return value;
+        }
+      }
     default:
       throw ArgumentError('Unknown property: $property');
   }
 }
 
 sealed class _HabitLogUpdate {
-  bool call({required int id, int? habitId, String? date, bool? isCompleted});
+  bool call({
+    required int id,
+    int? habitId,
+    String? date,
+    bool? isCompleted,
+    int? progress,
+  });
 }
 
 class _HabitLogUpdateImpl implements _HabitLogUpdate {
@@ -119,6 +146,7 @@ class _HabitLogUpdateImpl implements _HabitLogUpdate {
     Object? habitId = ignore,
     Object? date = ignore,
     Object? isCompleted = ignore,
+    Object? progress = ignore,
   }) {
     return collection.updateProperties(
           [id],
@@ -126,6 +154,7 @@ class _HabitLogUpdateImpl implements _HabitLogUpdate {
             if (habitId != ignore) 1: habitId as int?,
             if (date != ignore) 2: date as String?,
             if (isCompleted != ignore) 3: isCompleted as bool?,
+            if (progress != ignore) 4: progress as int?,
           },
         ) >
         0;
@@ -138,6 +167,7 @@ sealed class _HabitLogUpdateAll {
     int? habitId,
     String? date,
     bool? isCompleted,
+    int? progress,
   });
 }
 
@@ -152,11 +182,13 @@ class _HabitLogUpdateAllImpl implements _HabitLogUpdateAll {
     Object? habitId = ignore,
     Object? date = ignore,
     Object? isCompleted = ignore,
+    Object? progress = ignore,
   }) {
     return collection.updateProperties(id, {
       if (habitId != ignore) 1: habitId as int?,
       if (date != ignore) 2: date as String?,
       if (isCompleted != ignore) 3: isCompleted as bool?,
+      if (progress != ignore) 4: progress as int?,
     });
   }
 }
@@ -168,7 +200,7 @@ extension HabitLogUpdate on IsarCollection<int, HabitLog> {
 }
 
 sealed class _HabitLogQueryUpdate {
-  int call({int? habitId, String? date, bool? isCompleted});
+  int call({int? habitId, String? date, bool? isCompleted, int? progress});
 }
 
 class _HabitLogQueryUpdateImpl implements _HabitLogQueryUpdate {
@@ -182,11 +214,13 @@ class _HabitLogQueryUpdateImpl implements _HabitLogQueryUpdate {
     Object? habitId = ignore,
     Object? date = ignore,
     Object? isCompleted = ignore,
+    Object? progress = ignore,
   }) {
     return query.updateProperties(limit: limit, {
       if (habitId != ignore) 1: habitId as int?,
       if (date != ignore) 2: date as String?,
       if (isCompleted != ignore) 3: isCompleted as bool?,
+      if (progress != ignore) 4: progress as int?,
     });
   }
 }
@@ -209,6 +243,7 @@ class _HabitLogQueryBuilderUpdateImpl implements _HabitLogQueryUpdate {
     Object? habitId = ignore,
     Object? date = ignore,
     Object? isCompleted = ignore,
+    Object? progress = ignore,
   }) {
     final q = query.build();
     try {
@@ -216,6 +251,7 @@ class _HabitLogQueryBuilderUpdateImpl implements _HabitLogQueryUpdate {
         if (habitId != ignore) 1: habitId as int?,
         if (date != ignore) 2: date as String?,
         if (isCompleted != ignore) 3: isCompleted as bool?,
+        if (progress != ignore) 4: progress as int?,
       });
     } finally {
       q.close();
@@ -513,6 +549,63 @@ extension HabitLogQueryFilter
       );
     });
   }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition> progressEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 4, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition> progressGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 4, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition>
+  progressGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 4, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition> progressLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(LessCondition(property: 4, value: value));
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition>
+  progressLessThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 4, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterFilterCondition> progressBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 4, lower: lower, upper: upper),
+      );
+    });
+  }
 }
 
 extension HabitLogQueryObject
@@ -570,6 +663,18 @@ extension HabitLogQuerySortBy on QueryBuilder<HabitLog, HabitLog, QSortBy> {
       return query.addSortBy(3, sort: Sort.desc);
     });
   }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> sortByProgress() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4);
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> sortByProgressDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4, sort: Sort.desc);
+    });
+  }
 }
 
 extension HabitLogQuerySortThenBy
@@ -625,6 +730,18 @@ extension HabitLogQuerySortThenBy
       return query.addSortBy(3, sort: Sort.desc);
     });
   }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> thenByProgress() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4);
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterSortBy> thenByProgressDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(4, sort: Sort.desc);
+    });
+  }
 }
 
 extension HabitLogQueryWhereDistinct
@@ -646,6 +763,12 @@ extension HabitLogQueryWhereDistinct
   QueryBuilder<HabitLog, HabitLog, QAfterDistinct> distinctByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(3);
+    });
+  }
+
+  QueryBuilder<HabitLog, HabitLog, QAfterDistinct> distinctByProgress() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(4);
     });
   }
 }
@@ -675,6 +798,12 @@ extension HabitLogQueryProperty1
       return query.addProperty(3);
     });
   }
+
+  QueryBuilder<HabitLog, int, QAfterProperty> progressProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
 }
 
 extension HabitLogQueryProperty2<R>
@@ -702,6 +831,12 @@ extension HabitLogQueryProperty2<R>
       return query.addProperty(3);
     });
   }
+
+  QueryBuilder<HabitLog, (R, int), QAfterProperty> progressProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
 }
 
 extension HabitLogQueryProperty3<R1, R2>
@@ -727,6 +862,12 @@ extension HabitLogQueryProperty3<R1, R2>
   QueryBuilder<HabitLog, (R1, R2, bool), QOperations> isCompletedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<HabitLog, (R1, R2, int), QOperations> progressProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
     });
   }
 }

@@ -1,8 +1,10 @@
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/habit.dart';
 import '../models/habit_log.dart';
 import '../services/database_helper.dart';
+import '../services/sync_service.dart';
 
 class HabitProvider with ChangeNotifier {
   List<Habit> _habits = [];
@@ -11,11 +13,13 @@ class HabitProvider with ChangeNotifier {
 
   DateTime _selectedDate = DateTime.now();
 
-  List<Habit> get habits => _habits;
+  List<Habit> get habits => UnmodifiableListView(_habits);
   DateTime get selectedDate => _selectedDate;
+  List<HabitLog> get allCompletedLogs => UnmodifiableListView(_allCompletedLogs);
 
   bool _isLoading = true;
   bool get isLoading => _isLoading;
+  bool _isChangingDate = false;
 
   HabitProvider() {
     _initData();
@@ -27,7 +31,7 @@ class HabitProvider with ChangeNotifier {
       await _loadLogsForSelectedDate();
       await _loadAllCompletedLogs();
     } catch (e) {
-      debugPrint("HabitProvider init error: $e");
+      debugPrint('HabitProvider init error: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -36,9 +40,12 @@ class HabitProvider with ChangeNotifier {
 
   // ─────────────────────────── DATES ───────────────────────────
 
-  void setSelectedDate(DateTime date) {
+  Future<void> setSelectedDate(DateTime date) async {
+    if (_isChangingDate) return;
+    _isChangingDate = true;
     _selectedDate = date;
-    _loadLogsForSelectedDate();
+    await _loadLogsForSelectedDate();
+    _isChangingDate = false;
   }
 
   String get selectedDateStr => DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -46,25 +53,44 @@ class HabitProvider with ChangeNotifier {
   // ─────────────────────────── HABITS CRUD ───────────────────────────
 
   Future<void> _loadHabits() async {
-    _habits = await DatabaseHelper.instance.readAllHabits();
+    final dbHabits = await DatabaseHelper.instance.readAllHabits();
+    
+    // Auto-cleanup starter habits if they exist to provide a clean slate
+    if (dbHabits.any((h) => h.title == 'My first habit' || h.title == 'Hydrate')) {
+      await DatabaseHelper.instance.deleteAllHabits();
+      _habits = [];
+    } else {
+      _habits = dbHabits;
+    }
   }
 
   Future<void> addHabit(Habit habit) async {
     await DatabaseHelper.instance.createHabit(habit);
     await _loadHabits();
     notifyListeners();
+    SyncService.instance.scheduleSync();
   }
 
   Future<void> updateHabit(Habit habit) async {
     await DatabaseHelper.instance.updateHabit(habit);
     await _loadHabits();
     notifyListeners();
+    SyncService.instance.scheduleSync();
   }
 
   Future<void> deleteHabit(int id) async {
     await DatabaseHelper.instance.deleteHabit(id);
     await _loadHabits();
     notifyListeners();
+    SyncService.instance.scheduleSync();
+  }
+
+  Future<void> deleteAllHabits() async {
+    await DatabaseHelper.instance.deleteAllHabits();
+    await _loadHabits();
+    await _loadAllCompletedLogs();
+    notifyListeners();
+    SyncService.instance.scheduleSync();
   }
 
   // ─────────────────────────── HABIT LOGS ───────────────────────────
@@ -79,12 +105,29 @@ class HabitProvider with ChangeNotifier {
   }
 
   bool isHabitCompletedOnSelectedDate(int habitId) {
-    try {
-      final log = _logsForSelectedDate.firstWhere((log) => log.habitId == habitId);
-      return log.isCompleted;
-    } catch (e) {
-      return false;
-    }
+    final log = _logsForSelectedDate
+        .where((l) => l.habitId == habitId)
+        .firstOrNull;
+    if (log != null) return log.isCompleted;
+    final habit = _habits.where((h) => h.id == habitId).firstOrNull;
+    return habit?.goalType == 'negative';
+  }
+
+  int getHabitProgressOnSelectedDate(int habitId) {
+    final log = _logsForSelectedDate
+        .where((l) => l.habitId == habitId)
+        .firstOrNull;
+    return log?.progress ?? 0;
+  }
+
+  Future<void> updateHabitProgress(int habitId, int progress, bool isCompleted) async {
+    // This requires adding an updateProgress method to DatabaseHelper.
+    // For now, if we don't have it, we might need to modify DatabaseHelper too.
+    await DatabaseHelper.instance.logHabitProgress(habitId, selectedDateStr, progress, isCompleted);
+    await _loadLogsForSelectedDate();
+    await _loadAllCompletedLogs();
+    notifyListeners();
+    SyncService.instance.scheduleSync();
   }
 
   Future<void> toggleHabitCompletion(int habitId) async {
@@ -95,6 +138,7 @@ class HabitProvider with ChangeNotifier {
     await _loadLogsForSelectedDate();
     await _loadAllCompletedLogs();
     notifyListeners();
+    SyncService.instance.scheduleSync();
   }
 
   // ─────────────────────────── DYNAMIC STATS ───────────────────────────
@@ -144,6 +188,12 @@ class HabitProvider with ChangeNotifier {
     return streak;
   }
 
+  bool get isStreakActiveToday {
+    if (_allCompletedLogs.isEmpty) return false;
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    return _allCompletedLogs.any((log) => log.date == today);
+  }
+
   /// Completion rate = total completed logs / (total habits × total tracked days)
   double get completionRate {
     if (_allCompletedLogs.isEmpty || _habits.isEmpty) return 0.0;
@@ -184,5 +234,13 @@ class HabitProvider with ChangeNotifier {
       }
     }
     return completedDays;
+  }
+
+  /// Refresh all data from database (used after cloud restore)
+  Future<void> refreshAll() async {
+    await _loadHabits();
+    await _loadLogsForSelectedDate();
+    await _loadAllCompletedLogs();
+    notifyListeners();
   }
 }

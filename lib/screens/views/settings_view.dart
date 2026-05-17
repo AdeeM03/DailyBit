@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/notification_service.dart';
 
@@ -87,7 +88,7 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
               ),
             ),
-          ],
+          ].animate(interval: 50.ms).fade(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOutQuad),
         ),
         // Top Right Moon Icon
         Positioned(
@@ -96,8 +97,8 @@ class _SettingsViewState extends State<SettingsView> {
           child: Container(
             width: 45,
             height: 45,
-            decoration: BoxDecoration(
-              color: const Color(0xFF62B694),
+            decoration: const BoxDecoration(
+              color: Color(0xFF62B694),
               shape: BoxShape.circle,
             ),
             child: const Center(child: FaIcon(FontAwesomeIcons.solidMoon, color: Colors.white, size: 20)),
@@ -114,8 +115,8 @@ class _SettingsViewState extends State<SettingsView> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F9F7),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF5F9F7),
               shape: BoxShape.circle,
             ),
             child: Center(child: FaIcon(FontAwesomeIcons.bell, color: Colors.grey.shade600, size: 20)),
@@ -141,15 +142,15 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
-  Widget _buildSettingsTile(dynamic icon, String title, bool hasArrow, bool hasSwitch) {
+  Widget _buildSettingsTile(FaIconData icon, String title, bool hasArrow, bool hasSwitch) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F9F7),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF5F9F7),
               shape: BoxShape.circle,
             ),
             child: Center(child: FaIcon(icon, color: Colors.grey.shade600, size: 20)),

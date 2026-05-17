@@ -14,6 +14,9 @@ class Habit {
     this.bgColorHex = 0,
     this.isCurrentFocus = false,
     this.createdAt = '',
+    this.timeOfDay = 'Anytime',
+    this.goalType = 'off',
+    this.goalValue = 0,
   });
 
   final int id;
@@ -28,4 +31,8 @@ class Habit {
 
   @Index()
   late String createdAt;
+
+  late String timeOfDay;
+  late String goalType;
+  late int goalValue;
 }

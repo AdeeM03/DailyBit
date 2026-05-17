@@ -9,6 +9,7 @@ class HabitLog {
     this.habitId = 0,
     this.date = '',
     this.isCompleted = false,
+    this.progress = 0,
   });
 
   final int id;
@@ -20,4 +21,6 @@ class HabitLog {
   late String date; // Format: YYYY-MM-DD
 
   late bool isCompleted;
+
+  late int progress;
 }

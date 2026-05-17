@@ -28,6 +28,9 @@ final HabitSchema = IsarGeneratedSchema(
       IsarPropertySchema(name: 'bgColorHex', type: IsarType.long),
       IsarPropertySchema(name: 'isCurrentFocus', type: IsarType.bool),
       IsarPropertySchema(name: 'createdAt', type: IsarType.string),
+      IsarPropertySchema(name: 'timeOfDay', type: IsarType.string),
+      IsarPropertySchema(name: 'goalType', type: IsarType.string),
+      IsarPropertySchema(name: 'goalValue', type: IsarType.long),
     ],
     indexes: [
       IsarIndexSchema(
@@ -56,6 +59,9 @@ int serializeHabit(IsarWriter writer, Habit object) {
   IsarCore.writeLong(writer, 6, object.bgColorHex);
   IsarCore.writeBool(writer, 7, value: object.isCurrentFocus);
   IsarCore.writeString(writer, 8, object.createdAt);
+  IsarCore.writeString(writer, 9, object.timeOfDay);
+  IsarCore.writeString(writer, 10, object.goalType);
+  IsarCore.writeLong(writer, 11, object.goalValue);
   return object.id;
 }
 
@@ -100,6 +106,19 @@ Habit deserializeHabit(IsarReader reader) {
   _isCurrentFocus = IsarCore.readBool(reader, 7);
   final String _createdAt;
   _createdAt = IsarCore.readString(reader, 8) ?? '';
+  final String _timeOfDay;
+  _timeOfDay = IsarCore.readString(reader, 9) ?? 'Anytime';
+  final String _goalType;
+  _goalType = IsarCore.readString(reader, 10) ?? 'off';
+  final int _goalValue;
+  {
+    final value = IsarCore.readLong(reader, 11);
+    if (value == -9223372036854775808) {
+      _goalValue = 0;
+    } else {
+      _goalValue = value;
+    }
+  }
   final object = Habit(
     id: _id,
     title: _title,
@@ -110,6 +129,9 @@ Habit deserializeHabit(IsarReader reader) {
     bgColorHex: _bgColorHex,
     isCurrentFocus: _isCurrentFocus,
     createdAt: _createdAt,
+    timeOfDay: _timeOfDay,
+    goalType: _goalType,
+    goalValue: _goalValue,
   );
   return object;
 }
@@ -156,6 +178,19 @@ dynamic deserializeHabitProp(IsarReader reader, int property) {
       return IsarCore.readBool(reader, 7);
     case 8:
       return IsarCore.readString(reader, 8) ?? '';
+    case 9:
+      return IsarCore.readString(reader, 9) ?? 'Anytime';
+    case 10:
+      return IsarCore.readString(reader, 10) ?? 'off';
+    case 11:
+      {
+        final value = IsarCore.readLong(reader, 11);
+        if (value == -9223372036854775808) {
+          return 0;
+        } else {
+          return value;
+        }
+      }
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -172,6 +207,9 @@ sealed class _HabitUpdate {
     int? bgColorHex,
     bool? isCurrentFocus,
     String? createdAt,
+    String? timeOfDay,
+    String? goalType,
+    int? goalValue,
   });
 }
 
@@ -191,6 +229,9 @@ class _HabitUpdateImpl implements _HabitUpdate {
     Object? bgColorHex = ignore,
     Object? isCurrentFocus = ignore,
     Object? createdAt = ignore,
+    Object? timeOfDay = ignore,
+    Object? goalType = ignore,
+    Object? goalValue = ignore,
   }) {
     return collection.updateProperties(
           [id],
@@ -203,6 +244,9 @@ class _HabitUpdateImpl implements _HabitUpdate {
             if (bgColorHex != ignore) 6: bgColorHex as int?,
             if (isCurrentFocus != ignore) 7: isCurrentFocus as bool?,
             if (createdAt != ignore) 8: createdAt as String?,
+            if (timeOfDay != ignore) 9: timeOfDay as String?,
+            if (goalType != ignore) 10: goalType as String?,
+            if (goalValue != ignore) 11: goalValue as int?,
           },
         ) >
         0;
@@ -220,6 +264,9 @@ sealed class _HabitUpdateAll {
     int? bgColorHex,
     bool? isCurrentFocus,
     String? createdAt,
+    String? timeOfDay,
+    String? goalType,
+    int? goalValue,
   });
 }
 
@@ -239,6 +286,9 @@ class _HabitUpdateAllImpl implements _HabitUpdateAll {
     Object? bgColorHex = ignore,
     Object? isCurrentFocus = ignore,
     Object? createdAt = ignore,
+    Object? timeOfDay = ignore,
+    Object? goalType = ignore,
+    Object? goalValue = ignore,
   }) {
     return collection.updateProperties(id, {
       if (title != ignore) 1: title as String?,
@@ -249,6 +299,9 @@ class _HabitUpdateAllImpl implements _HabitUpdateAll {
       if (bgColorHex != ignore) 6: bgColorHex as int?,
       if (isCurrentFocus != ignore) 7: isCurrentFocus as bool?,
       if (createdAt != ignore) 8: createdAt as String?,
+      if (timeOfDay != ignore) 9: timeOfDay as String?,
+      if (goalType != ignore) 10: goalType as String?,
+      if (goalValue != ignore) 11: goalValue as int?,
     });
   }
 }
@@ -269,6 +322,9 @@ sealed class _HabitQueryUpdate {
     int? bgColorHex,
     bool? isCurrentFocus,
     String? createdAt,
+    String? timeOfDay,
+    String? goalType,
+    int? goalValue,
   });
 }
 
@@ -288,6 +344,9 @@ class _HabitQueryUpdateImpl implements _HabitQueryUpdate {
     Object? bgColorHex = ignore,
     Object? isCurrentFocus = ignore,
     Object? createdAt = ignore,
+    Object? timeOfDay = ignore,
+    Object? goalType = ignore,
+    Object? goalValue = ignore,
   }) {
     return query.updateProperties(limit: limit, {
       if (title != ignore) 1: title as String?,
@@ -298,6 +357,9 @@ class _HabitQueryUpdateImpl implements _HabitQueryUpdate {
       if (bgColorHex != ignore) 6: bgColorHex as int?,
       if (isCurrentFocus != ignore) 7: isCurrentFocus as bool?,
       if (createdAt != ignore) 8: createdAt as String?,
+      if (timeOfDay != ignore) 9: timeOfDay as String?,
+      if (goalType != ignore) 10: goalType as String?,
+      if (goalValue != ignore) 11: goalValue as int?,
     });
   }
 }
@@ -324,6 +386,9 @@ class _HabitQueryBuilderUpdateImpl implements _HabitQueryUpdate {
     Object? bgColorHex = ignore,
     Object? isCurrentFocus = ignore,
     Object? createdAt = ignore,
+    Object? timeOfDay = ignore,
+    Object? goalType = ignore,
+    Object? goalValue = ignore,
   }) {
     final q = query.build();
     try {
@@ -336,6 +401,9 @@ class _HabitQueryBuilderUpdateImpl implements _HabitQueryUpdate {
         if (bgColorHex != ignore) 6: bgColorHex as int?,
         if (isCurrentFocus != ignore) 7: isCurrentFocus as bool?,
         if (createdAt != ignore) 8: createdAt as String?,
+        if (timeOfDay != ignore) 9: timeOfDay as String?,
+        if (goalType != ignore) 10: goalType as String?,
+        if (goalValue != ignore) 11: goalValue as int?,
       });
     } finally {
       q.close();
@@ -1219,6 +1287,386 @@ extension HabitQueryFilter on QueryBuilder<Habit, Habit, QFilterCondition> {
       );
     });
   }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 9, value: value, caseSensitive: caseSensitive),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition>
+  timeOfDayGreaterThanOrEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(property: 9, value: value, caseSensitive: caseSensitive),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 9,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 9,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(property: 9, value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> timeOfDayIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(property: 9, value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition>
+  goalTypeGreaterThanOrEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(property: 10, value: value, caseSensitive: caseSensitive),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 10,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 10,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(property: 10, value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(property: 10, value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalValueEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(property: 11, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalValueGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(property: 11, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition>
+  goalValueGreaterThanOrEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(property: 11, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalValueLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(property: 11, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalValueLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(property: 11, value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> goalValueBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(property: 11, lower: lower, upper: upper),
+      );
+    });
+  }
 }
 
 extension HabitQueryObject on QueryBuilder<Habit, Habit, QFilterCondition> {}
@@ -1347,6 +1795,50 @@ extension HabitQuerySortBy on QueryBuilder<Habit, Habit, QSortBy> {
       return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByTimeOfDay({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(9, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByTimeOfDayDesc({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(9, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByGoalType({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByGoalTypeDesc({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByGoalValue() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(11);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByGoalValueDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(11, sort: Sort.desc);
+    });
+  }
 }
 
 extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
@@ -1473,6 +1965,50 @@ extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
       return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByTimeOfDay({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(9, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByTimeOfDayDesc({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(9, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByGoalType({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByGoalTypeDesc({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(10, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByGoalValue() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(11);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByGoalValueDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(11, sort: Sort.desc);
+    });
+  }
 }
 
 extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
@@ -1531,6 +2067,28 @@ extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
       return query.addDistinctBy(8, caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<Habit, Habit, QAfterDistinct> distinctByTimeOfDay({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(9, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterDistinct> distinctByGoalType({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(10, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterDistinct> distinctByGoalValue() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(11);
+    });
+  }
 }
 
 extension HabitQueryProperty1 on QueryBuilder<Habit, Habit, QProperty> {
@@ -1585,6 +2143,24 @@ extension HabitQueryProperty1 on QueryBuilder<Habit, Habit, QProperty> {
   QueryBuilder<Habit, String, QAfterProperty> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<Habit, String, QAfterProperty> timeOfDayProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<Habit, String, QAfterProperty> goalTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
+    });
+  }
+
+  QueryBuilder<Habit, int, QAfterProperty> goalValueProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(11);
     });
   }
 }
@@ -1643,6 +2219,24 @@ extension HabitQueryProperty2<R> on QueryBuilder<Habit, R, QAfterProperty> {
       return query.addProperty(8);
     });
   }
+
+  QueryBuilder<Habit, (R, String), QAfterProperty> timeOfDayProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<Habit, (R, String), QAfterProperty> goalTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
+    });
+  }
+
+  QueryBuilder<Habit, (R, int), QAfterProperty> goalValueProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(11);
+    });
+  }
 }
 
 extension HabitQueryProperty3<R1, R2>
@@ -1698,6 +2292,24 @@ extension HabitQueryProperty3<R1, R2>
   QueryBuilder<Habit, (R1, R2, String), QOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<Habit, (R1, R2, String), QOperations> timeOfDayProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<Habit, (R1, R2, String), QOperations> goalTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
+    });
+  }
+
+  QueryBuilder<Habit, (R1, R2, int), QOperations> goalValueProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(11);
     });
   }
 }

@@ -1,6 +1,6 @@
 import 'package:isar_plus/isar_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/habit.dart';
@@ -32,9 +32,6 @@ class DatabaseHelper {
 
     // Try to migrate old SharedPreferences data
     await _migrateFromSharedPreferences();
-
-    // Auto-seed if DB is empty (fresh install)
-    await _autoSeed();
   }
 
   // ─────── Platform-aware write helper ───────
@@ -109,7 +106,8 @@ class DatabaseHelper {
             ..dateLabel = map['dateLabel'] as String? ?? ''
             ..emoji = map['emoji'] as String? ?? ''
             ..emojiColorHex = map['emojiColorHex'] as int? ?? 0
-            ..mood = map['mood'] as String? ?? ''
+            ..moodLevel = map['moodLevel'] as int? ?? (map['mood'] != null ? 3 : 3)
+            ..title = map['title'] as String? ?? ''
             ..body = map['body'] as String? ?? '';
           isar.diaryEntrys.put(entry);
         }
@@ -119,67 +117,7 @@ class DatabaseHelper {
     await prefs.setBool(_keyMigrated, true);
   }
 
-  // ─────────────────────────── AUTO SEED ───────────────────────────
 
-  Future<void> _autoSeed() async {
-    final existingHabits = _isar.habits.where().findAll();
-    if (existingHabits.isNotEmpty) return;
-
-    final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    await _write((isar) {
-      isar.habits.put(Habit(id: isar.habits.autoIncrement())
-        ..title = 'My first habit'
-        ..subtitle = 'Every morning • 15 mins'
-        ..iconCodePoint = 0
-        ..iconFontFamily = 'MaterialIcons'
-        ..colorHex = 0xFF7CB342
-        ..bgColorHex = 0xFF558B2F
-        ..isCurrentFocus = true
-        ..createdAt = todayStr);
-
-      isar.habits.put(Habit(id: isar.habits.autoIncrement())
-        ..title = 'Hydrate'
-        ..subtitle = '500ml of water'
-        ..iconCodePoint = 0xe6b5
-        ..iconFontFamily = 'MaterialIcons'
-        ..colorHex = 0xFF42A5F5
-        ..bgColorHex = 0xFFE3F2FD
-        ..isCurrentFocus = false
-        ..createdAt = todayStr);
-
-      isar.habits.put(Habit(id: isar.habits.autoIncrement())
-        ..title = 'Mindfulness'
-        ..subtitle = 'Deep breathing exercise'
-        ..iconCodePoint = 0xe58b
-        ..iconFontFamily = 'MaterialIcons'
-        ..colorHex = 0xFF66BB6A
-        ..bgColorHex = 0xFFE8F5E9
-        ..isCurrentFocus = false
-        ..createdAt = todayStr);
-
-      isar.habitLogs.put(HabitLog(id: isar.habitLogs.autoIncrement())
-        ..habitId = 1
-        ..date = todayStr
-        ..isCompleted = true);
-
-      isar.diaryEntrys.put(DiaryEntry(id: isar.diaryEntrys.autoIncrement())
-        ..date = '2026-10-24'
-        ..dateLabel = 'Monday, Oct 24'
-        ..emoji = '😊'
-        ..emojiColorHex = 0xFF7CB342
-        ..mood = 'ENERGETIC MORNING'
-        ..body = 'Finally managed to finish the 30-minute meditation session.');
-
-      isar.diaryEntrys.put(DiaryEntry(id: isar.diaryEntrys.autoIncrement())
-        ..date = '2026-10-23'
-        ..dateLabel = 'Sunday, Oct 23'
-        ..emoji = '🍃'
-        ..emojiColorHex = 0xFF558B2F
-        ..mood = 'FOCUSED FLOW'
-        ..body = 'Hit a 7-day streak today!');
-    });
-  }
 
   // ─────────────────────────── HABITS CRUD ───────────────────────────
 
@@ -196,7 +134,10 @@ class DatabaseHelper {
       ..colorHex = habit.colorHex
       ..bgColorHex = habit.bgColorHex
       ..isCurrentFocus = habit.isCurrentFocus
-      ..createdAt = habit.createdAt;
+      ..createdAt = habit.createdAt
+      ..timeOfDay = habit.timeOfDay
+      ..goalType = habit.goalType
+      ..goalValue = habit.goalValue;
 
     await _write((isar) {
       isar.habits.put(newHabit);
@@ -213,6 +154,13 @@ class DatabaseHelper {
   Future<void> deleteHabit(int id) async {
     await _write((isar) {
       isar.habits.delete(id);
+    });
+  }
+
+  Future<void> deleteAllHabits() async {
+    await _write((isar) {
+      isar.habits.where().deleteAll();
+      isar.habitLogs.where().deleteAll();
     });
   }
 
@@ -252,6 +200,32 @@ class DatabaseHelper {
     }
   }
 
+  Future<void> logHabitProgress(int habitId, String date, int progress, bool isCompleted) async {
+    final allLogs = _isar.habitLogs.where().findAll();
+    final existing = allLogs.where(
+      (log) => log.habitId == habitId && log.date == date,
+    ).toList();
+
+    if (existing.isNotEmpty) {
+      final updated = HabitLog(id: existing.first.id)
+        ..habitId = habitId
+        ..date = date
+        ..isCompleted = isCompleted
+        ..progress = progress;
+      await _write((isar) {
+        isar.habitLogs.put(updated);
+      });
+    } else {
+      await _write((isar) {
+        isar.habitLogs.put(HabitLog(id: isar.habitLogs.autoIncrement())
+          ..habitId = habitId
+          ..date = date
+          ..isCompleted = isCompleted
+          ..progress = progress);
+      });
+    }
+  }
+
   // ─────────────────────────── DIARY ENTRIES ───────────────────────────
 
   Future<List<DiaryEntry>> readAllDiaryEntries() async {
@@ -266,12 +240,30 @@ class DatabaseHelper {
       ..dateLabel = entry.dateLabel
       ..emoji = entry.emoji
       ..emojiColorHex = entry.emojiColorHex
-      ..mood = entry.mood
+      ..moodLevel = entry.moodLevel
+      ..title = entry.title
       ..body = entry.body;
 
     await _write((isar) {
       isar.diaryEntrys.put(newEntry);
     });
     return newEntry;
+  }
+  Future<void> updateDiaryEntry(DiaryEntry entry) async {
+    await _write((isar) {
+      isar.diaryEntrys.put(entry);
+    });
+  }
+
+  Future<void> deleteDiaryEntry(int id) async {
+    await _write((isar) {
+      isar.diaryEntrys.delete(id);
+    });
+  }
+
+  Future<void> deleteAllDiaryEntries() async {
+    await _write((isar) {
+      isar.diaryEntrys.where().deleteAll();
+    });
   }
 }

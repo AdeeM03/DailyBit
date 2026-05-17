@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../widgets/task_card.dart';
 
 class CalendarView extends StatefulWidget {
@@ -28,7 +29,7 @@ class _CalendarViewState extends State<CalendarView> {
               color: const Color(0xFF2D3142),
             ),
           ),
-        ),
+        ).animate().fade().slideX(begin: -0.2),
 
         // Day Selector Section
         SizedBox(
@@ -52,7 +53,7 @@ class _CalendarViewState extends State<CalendarView> {
               _buildDayItem('17', 'Sun'),
             ],
           ),
-        ),
+        ).animate().fade().slideX(begin: 0.2),
         const SizedBox(height: 10),
 
         // Today Tasks Section (Reused from Home)
@@ -113,7 +114,7 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildDayItem(String day, String weekday) {
-    bool isActive = _selectedDay == day;
+    final bool isActive = _selectedDay == day;
     return GestureDetector(
       onTap: () {
         setState(() {

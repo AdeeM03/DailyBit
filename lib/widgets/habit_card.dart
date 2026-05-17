@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class HabitCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final dynamic icon;
+  final FaIconData icon;
   final Color iconBgColor;
   final Color iconColor;
   final bool isChecked;
@@ -17,7 +17,7 @@ class HabitCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     this.iconBgColor = const Color(0xFFE8F5E9),
-    this.iconColor = const Color(0xFF7CB342),
+    this.iconColor = const Color(0xFF58CC02),
     this.isChecked = false,
     required this.onToggle,
   });
@@ -86,10 +86,10 @@ class HabitCard extends StatelessWidget {
               height: 30,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isChecked ? const Color(0xFF7CB342) : Colors.transparent,
+                color: isChecked ? const Color(0xFF58CC02) : Colors.transparent,
                 border: Border.all(
                   color: isChecked
-                      ? const Color(0xFF7CB342)
+                      ? const Color(0xFF58CC02)
                       : Colors.grey.shade300,
                   width: 2,
                 ),
