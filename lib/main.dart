@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'screens/onboarding_screen.dart';
+import 'screens/splash_screen.dart';
 
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -129,7 +129,7 @@ class DailybitApp extends StatelessWidget {
       supportedLocales: const [
         Locale('en'),
       ],
-      home: const OnboardingScreen(),
+      home: const SplashScreen(),
     );
   }
 }

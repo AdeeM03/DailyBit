@@ -1,8 +1,9 @@
 flutter_native_splash:
-  color: "#7CB342"
-  # No image — solid green prototype splash
+  color: "#58CC02"
+  image: assets/icons/logo.png
   android: true
   ios: true
   web: false
   android_12:
-    color: "#7CB342"
+    color: "#58CC02"
+    image: assets/icons/logo.png

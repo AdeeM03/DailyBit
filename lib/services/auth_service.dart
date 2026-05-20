@@ -112,4 +112,14 @@ class AuthService extends ChangeNotifier {
       rethrow;
     }
   }
+
+  // 6. Password Reset
+  Future<void> sendPasswordReset(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      debugPrint('AuthService Password Reset Error: $e');
+      rethrow;
+    }
+  }
 }

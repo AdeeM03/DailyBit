@@ -14,6 +14,7 @@ import '../utils/auth_error_mapper.dart';
 import '../utils/app_toast.dart';
 import 'home_page.dart';
 import 'sign_up_screen.dart';
+import 'forgot_password_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -196,14 +197,20 @@ class _SignInScreenState extends State<SignInScreen> {
                       _password = val;
                       if (_passwordError != null) setState(() => _passwordError = null);
                     },
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: Text(
-                        'LUPA?',
-                        style: GoogleFonts.nunito(
-                          color: const Color(0xFF1CB0F6),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
+                    suffixIcon: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(builder: (_) => const ForgotPasswordScreen()),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: Text(
+                          'LUPA?',
+                          style: GoogleFonts.nunito(
+                            color: const Color(0xFF1CB0F6),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -309,7 +316,10 @@ class _SignInScreenState extends State<SignInScreen> {
 
                   // ─── Forgot Password ───
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(builder: (_) => const ForgotPasswordScreen()),
+                    ),
                     child: Text(
                       'Forgot Password?',
                       style: GoogleFonts.nunito(
